@@ -156,18 +156,14 @@
     <ClCompile Include="CArc.cpp" />
     <ClCompile Include="CException.cpp" />
     <ClCompile Include="CGraphe.cpp" />
-    <ClCompile Include="CParser.cpp" />
     <ClCompile Include="CSommet.cpp" />
-    <ClCompile Include="CString.cpp" />
     <ClCompile Include="ProjetGraphes.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CArc.h" />
     <ClInclude Include="CException.h" />
     <ClInclude Include="CGraphe.h" />
-    <ClInclude Include="CParser.h" />
     <ClInclude Include="CSommet.h" />
-    <ClInclude Include="CString.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

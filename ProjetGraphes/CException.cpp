@@ -1,6 +1,5 @@
-#ifndef CEXCEPTION_H
 #include "CException.h"
-#endif
+
 /*************************************************
 *****NOM : CException
 **************************************************
@@ -21,14 +20,15 @@ CException::CException()
 **************************************************
 *****Constructeur de confort
 **************************************************
-*****Entrée : unsiged int uErreur le code d'erreur.
+*****Entrée : unsiged int uErreur le code d'erreur et char * sMessage le message d'erreur
 *****Nécessite : néant
 *****Sortie : néant
 *****Entraine : néant
 *************************************************/
-CException::CException(unsigned int uErreur)
+CException::CException(unsigned int uErreur, const char * sMessage)
 {
 	uEXCErreur = uErreur;
+	sEXCEMessage = _strdup(sMessage);
 }
 
 /*************************************************
@@ -43,7 +43,7 @@ CException::CException(unsigned int uErreur)
 *************************************************/
 CException::~CException()
 {
-
+	delete[] sEXCEMessage;
 }
 
 /*************************************************
@@ -76,64 +76,13 @@ void CException::EXCSetErreur(unsigned int uErreur)
 	uEXCErreur = uErreur;
 }
 
-/*************************************************
-*****NOM : EXCAfficherMessageErreur
-**************************************************
-*****Affiche dans la sortie standard un message d'erreur approprié.
-**************************************************
-*****Entrée : néant
-*****Nécessite : néant
-*****Sortie : néant
-*****Entraine : néant
-*************************************************/
-void CException::EXCAfficherMessageErreur(void)
+const char * CException::EXCGetMessage(void)
 {
-	cerr << "Exception : ";
-	switch (uEXCErreur) {
-		/*Erreur par defaut*/
-	case Erreur_Par_Defaut:
-		cerr << "Exception par defaut";
-		break;
+	return sEXCEMessage;
+}
 
-		/*Main*/
-	case 1:
-		cerr << "Le nombre de paramètres que vous avez passé est illogique" << endl;
-		break;
-
-		/*CSommet*/
-	case 2:
-		cerr << "L'index de votre sommet n'est pas correct" << endl;
-		break;
-
-		/*CGraphe*/
-	case 3:
-		cerr << "L'arc spécifié existe déjà" << endl;
-		break;
-	case 4:
-		cerr << "L'arc spécifié n'est pas valable" << endl;
-		break;
-	case 5:
-		cerr << "Le sommet spécifié existe déjà" << endl;
-		break;
-	case 6:
-		cerr << "Le sommet spécifié n'est pas valable" << endl;
-		break;
-	case 7:
-		cerr << "La grammaire du fichier n'est pas bonne" << endl;
-		break;
-	case 8:
-		cerr << "Erreur par défaut : CGraphe :" << endl;
-		break;
-
-		/*CParser*/
-	case 9:
-		cerr << "Le parser n'est pas initialisé" << endl;
-		break;
-	case 10:
-		cerr << "Impossible d'ouvrir le fichier" << endl;
-		break;
-
-		cerr << endl;
-	}
+void CException::EXCSetMessage(const char * sMessage)
+{
+	sEXCEMessage = _strdup(sMessage);
 }
 

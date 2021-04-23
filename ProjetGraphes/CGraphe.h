@@ -1,16 +1,24 @@
 #ifndef CGRAPHE_H
 #define CGRAPHE_H
 
+#include <regex>
+#include <fstream>
+#include <string>
+//#include "CGraphe.h"
 #include "CSommet.h"
+#include "CArc.h"
 #include "CException.h"
-#include "CParser.h"
 
-#define Erreur_Graphe_Defaut 30
-#define Erreur_Syntaxe 31
-#define Sommet_Inconnu 32
-#define Sommet_Existant 33
-#define Arc_Inconnu 34
-#define Arc_Existant 35
+
+#define Ouverture_Fichier_Impossible 1
+#define Auto_Referencement			 2
+#define Erreur_Syntaxe				 3
+#define Erreur_NbSommets			 4
+#define Erreur_NbArcs				 5
+#define Sommet_Inconnu				 6
+#define Sommet_Existant				 7
+#define Arc_Inconnu					 8
+#define Arc_Existant				 9
 
 class CGraphe
 {
@@ -72,7 +80,7 @@ public:
 	*****Entraîne : Création d'un graphe vide et correctement initialisé à partir du fichier stocké dans sChemin.
 	OU Une bonne erreur des famille si le chemin ou le fichier est mauvais
 	*************************************************/
-	CGraphe(const CString & STRString);
+	CGraphe(const char * cpInput);
 
 	/*************************************************
 	*****NOM : ~CGraphe
@@ -86,6 +94,7 @@ public:
 	*************************************************/
 	~CGraphe(void);
 
+
 	/*************************************************
 	*****NOM : GPHAjouterSommet
 	**************************************************
@@ -98,6 +107,7 @@ public:
 	*************************************************/
 	unsigned int GPHAjouterSommet(unsigned int uNumero);
 
+
 	/*************************************************
 	*****NOM : GPHSupprimerSommet
 	**************************************************
@@ -108,8 +118,8 @@ public:
 	*****Sortie : néant
 	*****Entraîne : Supprime SOMSOmmet du graphe ainsi que tout les liens avec les autres sommets.
 	**************************************************/
-
 	void GPHSupprimerSommet(unsigned int uId);
+
 
 	/*************************************************
 	*****NOM : GPHLierSommets

@@ -1,6 +1,8 @@
 #ifndef CARC_H
 #define CARC_H
 
+#include <string>
+
 class CArc
 {
 private:

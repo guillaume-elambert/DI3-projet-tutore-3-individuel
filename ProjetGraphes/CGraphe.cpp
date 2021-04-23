@@ -1,8 +1,6 @@
 #include "CGraphe.h"
-#include "CString.h"
-#include "CParser.h"
-#include "CSommet.h"
-#include "CArc.h"
+
+
 
 /*************************************************
 	*****NOM : GPHChercherSommet
@@ -61,177 +59,142 @@ CGraphe::CGraphe(CGraphe & GPHParam) {
 	*****Entraîne : Création d'un graphe vide et correctement initialisé à partir du fichier stocké dans sChemin.
 	OU Une bonne erreur des famille si le chemin ou le fichier est mauvais
 	*************************************************/
-CGraphe::CGraphe(const CString & STRString)
+CGraphe::CGraphe(const char *cpChemin)
 {
-	unsigned int uIndexBoucle = 0;
-	unsigned int uNombreSommets = 0;
-	unsigned int uNombreArcs = 0;
-	unsigned int uDebutArc = 0;
-	unsigned int uFinArc = 0;
 
+	//Initialisation par défaut
 	pSOMGPHListeSommet = new CSommet[0];
 	uGPHMaxIdSommet = 0;
 	uGPHTailleLSom = 0;
 
-	CParser PARParser;
-	PARParser.PARInitialiser(STRString);
+	char sExceptionMessage[] = "";
 
-	/*NombreSommet*/
-	if (PARParser.PARLireType() == "entier" && PARParser.PARLireNom() == "NBSommets" && PARParser.PARLireValeur() >= 0)
-	{
-		uNombreSommets = PARParser.PARLireValeur();
-	}
-	else
-	{
-		PARParser.PARFinaliser();
-		throw CException(Erreur_Syntaxe);
-	}
+	std::string sFileContent(""), sBuffer;
+	std::fstream FILfichier(cpChemin);
 
-	/*Saut de ligne*/
-	if (!PARParser.PARSuivant() || PARParser.PARLireType() != "saut")
+	if (FILfichier.is_open())
 	{
-		PARParser.PARFinaliser();
-		throw CException(Erreur_Syntaxe);
-	}
-
-	/*NBArcs*/
-	if (PARParser.PARSuivant() && PARParser.PARLireType() == "entier" && PARParser.PARLireNom() == "NBArcs" && PARParser.PARLireValeur() >= 0)
-	{
-		uNombreArcs = PARParser.PARLireValeur();
-	}
-	else
-	{
-		PARParser.PARFinaliser();
-		throw CException(Erreur_Syntaxe);
-	}
-
-	/*Saut de ligne*/
-	if (!PARParser.PARSuivant() || PARParser.PARLireType() != "saut")
-	{
-		PARParser.PARFinaliser();
-		throw CException(Erreur_Syntaxe);
-	}
-
-	/*DebutTableau*/
-	if (!PARParser.PARSuivant() || PARParser.PARLireType() != "debutTableau" || PARParser.PARLireNom() != "Sommets")
-	{
-		PARParser.PARFinaliser();
-		throw CException(Erreur_Syntaxe);
-	}
-
-	/*Saut de ligne*/
-	if (!PARParser.PARSuivant() || PARParser.PARLireType() != "saut")
-	{
-		PARParser.PARFinaliser();
-		throw CException(Erreur_Syntaxe);
-	}
-
-	/*Ajout des sommets*/
-	for (uIndexBoucle = 1; uIndexBoucle <= uNombreSommets; uIndexBoucle++)
-	{
-		/*Numero*/
-		if (PARParser.PARSuivant() && PARParser.PARLireType() == "entier" && PARParser.PARLireNom() == "Numero")
-		{
-			GPHAjouterSommet(PARParser.PARLireValeur());
-		}
-		else
-		{
-			PARParser.PARFinaliser();
-			throw CException(Erreur_Syntaxe);
+		while (std::getline(FILfichier, sBuffer)) {
+			//On concatène la ligne courrante avec les lignes précédentes
+			//On ajoute on retour à la ligne si la ligne courrante n'est pas la dernière du fichier
+			sFileContent += sBuffer + (!FILfichier.eof() ? "\n" : "");
 		}
 
-		/*Saut de ligne*/
-		if (!PARParser.PARSuivant() || PARParser.PARLireType() != "saut")
-		{
-			PARParser.PARFinaliser();
-			throw CException(Erreur_Syntaxe);
-		}
 	}
-	/*FinTableau*/
-	if (!PARParser.PARSuivant() || PARParser.PARLireType() != "finTableau")
-	{
-		PARParser.PARFinaliser();
-		throw CException(Erreur_Syntaxe);
+	else {
+		FILfichier.close();
+		sprintf_s(sExceptionMessage, 255, "CGraphe::CGraphe(const char *cpChemin) : Impossible d'ouvrir le fichier \"%s\"\n", cpChemin);
+		throw CException(Ouverture_Fichier_Impossible, sExceptionMessage);
 	}
 
-	/*Saut de ligne*/
-	if (!PARParser.PARSuivant() || PARParser.PARLireType() != "saut")
-	{
-		PARParser.PARFinaliser();
-		throw CException(Erreur_Syntaxe);
+	FILfichier.close();
+	const char *cpInput = sFileContent.c_str();
+
+	std::string sRegexResult;
+	std::regex rRegex("NBSommets[ \\t]*=[ \\t]*([0-9]+)[ \\t]*\\nNBArcs[ \\t]*=[ \\t]*([0-9]+)[ \\t]*\\nSommets[ \\t]*=[ \\t]*(\\[)[ \\t]*\\n((?:Numero[ \\t]*=[ \\t]*[0-9]+\\n)*)\\][ \\t]*\\nArcs[ \\t]*=[ \\t]*(\\[)[ \\t]*\\n((?:Debut[ \\t]*=[ \\t]*[0-9]+[ \\t]*,[ \\t]*Fin[ \\t]*=[ \\t]*([0-9]+)[ \\t]*\\n)*)\\]\\s*");
+	//std::regex rRegex("NBSommets=([0-9]+)\\nNBArcs=([0-9]+)\\nSommets=(\\[)\\n((?:Numero=[0-9]+\\n)*)\\]\\nArcs=(\\[)\\n((?:Debut=[0-9]+, Fin=([0-9]+)\\n)*)\\]");
+	std::cmatch cmMatchGlobal, cmMatchNumeric;
+
+	int iNbSommets, iNbArcs;
+	int iNbInit = 0;
+
+	std::regex rNumericRegex("[0-9]+");
+
+	//Entrée : Le fichier correspond à l'expression régulière
+	if (std::regex_match(cpInput, cmMatchGlobal, rRegex)) {
+
+		//On parcourt l'ensemble des résultats des groupes de capture du fichier
+		for (unsigned uiRegexIndex = 1; uiRegexIndex < cmMatchGlobal.size(); ++uiRegexIndex) {
+			sRegexResult = cmMatchGlobal[uiRegexIndex].str();
+
+			//On vérifie si la ligne suivante est une initialisation du contenu
+			switch (sRegexResult[sRegexResult.length() - 1]) {
+			case '[':
+
+				++iNbInit;
+
+				//Entrée : Il y a bien un résultat de la recherche regex après celui courrant
+				//Vérification normalement inutile car regex_match a renvoyé true
+				if (++uiRegexIndex < cmMatchGlobal.size()) {
+
+					sRegexResult = cmMatchGlobal[uiRegexIndex].str();
+
+					int iCurrentResIndex = 0, iResValue, iTempInitValue;
+
+					//On parcourt la zone d'initialisation
+					while (std::regex_search(sRegexResult.c_str(), cmMatchNumeric, rNumericRegex)) {
+
+						//On récupère la valeur du sommet/de l'arc
+						iResValue = atoi(cmMatchNumeric.str().c_str());
+
+						//Entrée : On est dans la partie d'initialisation des sommets
+						//		=> On ajoute le sommet
+						if (iNbInit == 1) {
+							this->GPHAjouterSommet(iResValue);
+						}
+						//Entrée : On est dans la partie d'initialisation des arcs
+						else {
+							//Entrée : On est sur un idex pair (càd on est sur un début)
+							//		=> On stock la valeur pour la réutiliser quand on sera sur une fin de l'arc
+							if (iCurrentResIndex % 2 == 0) {
+								iTempInitValue = iResValue;
+							}
+							else {
+								//On relie les deux sommets
+								this->GPHLierSommets(iTempInitValue, iResValue);
+							}
+						}
+
+						//On passe à la suite de la chaîne
+						sRegexResult = cmMatchNumeric.suffix();
+						++iCurrentResIndex;
+					}
+
+					//Entrée : le nombre de sommets définit est différent que celui trouvé
+					if (iNbInit == 1 && iCurrentResIndex != iNbSommets) {
+						sprintf_s(sExceptionMessage, 255, "CGraphe::CGraphe(const char *cpChemin) : %d sommets attendus %d sommets obtenus\n", iNbSommets, iCurrentResIndex);
+						throw CException(Erreur_NbArcs, sExceptionMessage);
+					}
+					//Entrée : le nombre d'arcs définit est différent que celui trouvé
+					else if (iNbInit == 2 && (iCurrentResIndex /= 2) != iNbArcs) {
+						sprintf_s(sExceptionMessage, 255, "CGraphe::CGraphe(const char *cpChemin) : %d arcs attendus %d arcs obtenus\n", iNbArcs, iCurrentResIndex);
+						throw CException(Erreur_NbArcs, sExceptionMessage);
+					}
+				}
+
+				break;
+
+			default:
+				switch (uiRegexIndex) {
+
+				case 1:
+					//printf("Le nombre de sommets est de : %s\n", sRegexResult.c_str());
+					iNbSommets = atoi(sRegexResult.c_str());
+					break;
+
+				case 2:
+					//printf("Le nombre d'arcs est de : %s\n", sRegexResult.c_str());
+					iNbArcs = atoi(sRegexResult.c_str());
+
+					if (iNbSommets == 0 && iNbArcs != 0) {
+						throw CException(Erreur_NbArcs, "CGraphe::CGraphe(const char *cpChemin) : Le nombre de sommets a été défini sur 0, le nombre d'arcs devrait l'être aussi.\n");
+					}
+
+					if ( iNbArcs > std::pow(iNbSommets,2) - iNbSommets) {
+						sprintf_s(sExceptionMessage, 255, "CGraphe::CGraphe(const char *cpChemin) : Top d'arcs a initialiser, %d maximum .\n", (int)(std::pow(iNbSommets, 2) - iNbSommets));
+						throw CException(Erreur_NbArcs, sExceptionMessage);
+					}
+
+					break;
+				}
+				break;
+			}
+		}
+	}
+	else {
+		throw CException(Ouverture_Fichier_Impossible, "CGraphe::CGraphe(const char *cpChemin) : Impossible d'ouvrir le fichier\n");
 	}
 
-	/*DebutTableau*/
-	if (!PARParser.PARSuivant() || PARParser.PARLireType() != "debutTableau" || PARParser.PARLireNom() != "Arcs")
-	{
-		PARParser.PARFinaliser();
-		throw CException(Erreur_Syntaxe);
-	}
-
-	/*Saut de ligne*/
-	if (!PARParser.PARSuivant() || PARParser.PARLireType() != "saut")
-	{
-		PARParser.PARFinaliser();
-		throw CException(Erreur_Syntaxe);
-	}
-
-	/*Ajout des arcs*/
-	for (uIndexBoucle = 1; uIndexBoucle <= uNombreArcs; uIndexBoucle++)
-	{
-		/*Debut*/
-		if (PARParser.PARSuivant() && PARParser.PARLireType() == "entier" && PARParser.PARLireNom() == "Debut")
-		{
-			uDebutArc = PARParser.PARLireValeur();
-		}
-		else
-		{
-			PARParser.PARFinaliser();
-			throw CException(Erreur_Syntaxe);
-		}
-
-		/*Virgule*/
-		if (!PARParser.PARSuivant() || PARParser.PARLireType() != "virgule")
-		{
-			PARParser.PARFinaliser();
-			throw CException(Erreur_Syntaxe);
-		}
-
-		/*Fin*/
-		if (PARParser.PARSuivant() && PARParser.PARLireType() == "entier" && PARParser.PARLireNom() == "Fin")
-		{
-			uFinArc = PARParser.PARLireValeur();
-			GPHLierSommets(uDebutArc, uFinArc);
-		}
-		else
-		{
-			PARParser.PARFinaliser();
-			throw CException(Erreur_Syntaxe);
-		}
-
-		/*Saut de ligne*/
-		if (!PARParser.PARSuivant() || PARParser.PARLireType() != "saut")
-		{
-			PARParser.PARFinaliser();
-			throw CException(Erreur_Syntaxe);
-		}
-	}
-	/*FinTableau*/
-	if (!PARParser.PARSuivant() || PARParser.PARLireType() != "finTableau")
-	{
-		PARParser.PARFinaliser();
-		throw CException(Erreur_Syntaxe);
-	}
-
-	/*Saut de ligne*/
-	while (PARParser.PARSuivant())
-	{
-		if (PARParser.PARLireType() != "saut")
-		{
-			PARParser.PARFinaliser();
-			throw CException(Erreur_Syntaxe);
-		}
-	}
-	PARParser.PARFinaliser();
 }
 
 /*************************************************
@@ -261,8 +224,11 @@ CGraphe::~CGraphe(void)
 *************************************************/
 unsigned int CGraphe::GPHAjouterSommet(unsigned int uNumero)
 {
-	if (GPHChercherSommet(uNumero) != -1)
-		throw CException(Sommet_Existant);
+	if (GPHChercherSommet(uNumero) != -1) {
+		char sExceptionMessage[] = "";
+		sprintf_s(sExceptionMessage, 255, "CGraphe::GPHAjouterSommet(unsigned int uNumero) : Le sommet numero %d existe deja.\n", uNumero);
+		throw CException(Sommet_Existant, sExceptionMessage);
+	}
 
 	CSommet SOMNouveauSommet(uNumero);
 	uGPHMaxIdSommet++;
@@ -351,21 +317,38 @@ void CGraphe::GPHSupprimerSommet(unsigned int uId)
 *************************************************/
 void CGraphe::GPHLierSommets(unsigned int uIdDepart, unsigned int uIdArrivee)
 {
-	int iPosDep = GPHChercherSommet(uIdDepart);
-	int iPosArr = GPHChercherSommet(uIdArrivee);
-	if (iPosArr != -1 && iPosDep != -1)
-	{
-		if (pSOMGPHListeSommet[iPosDep].SOMChercherArcSortant(uIdArrivee) != -1)
-			throw CException(Arc_Existant);
+	char sExceptionMessage[] = "";
 
-		CArc ARCNArcA(uIdArrivee);
-		CArc ARCNArcD(uIdDepart);
-		pSOMGPHListeSommet[iPosDep].SOMAjouterArcSortant(ARCNArcA);
-		pSOMGPHListeSommet[iPosArr].SOMAjouterArcArrivant(ARCNArcD);
+	if (uIdDepart != uIdArrivee) {
+		int iPosDep = GPHChercherSommet(uIdDepart);
+		int iPosArr = GPHChercherSommet(uIdArrivee);
+		if (iPosArr != -1)
+		{
+			if (iPosDep != -1) {
+				if (pSOMGPHListeSommet[iPosDep].SOMChercherArcSortant(uIdArrivee) != -1) {
+					sprintf_s(sExceptionMessage, 255, "CGraphe::GPHLierSommets(unsigned int uIdDepart, unsigned int uIdArrivee) : L'arc sortant depuis %d vers %d existe deja.\n", uIdDepart, uIdArrivee);
+					throw CException(Arc_Existant, sExceptionMessage);
+				}
+
+				CArc ARCNArcA(uIdArrivee);
+				CArc ARCNArcD(uIdDepart);
+				pSOMGPHListeSommet[iPosDep].SOMAjouterArcSortant(ARCNArcA);
+				pSOMGPHListeSommet[iPosArr].SOMAjouterArcArrivant(ARCNArcD);
+			}
+			else {
+				sprintf_s(sExceptionMessage, 255, "CGraphe::GPHLierSommets(unsigned int uIdDepart, unsigned int uIdArrivee) : Le sommet de depart %d est inconnu.\n", uIdDepart);
+				throw CException(Sommet_Inconnu, sExceptionMessage);
+			}
+		}
+		else
+		{
+			sprintf_s(sExceptionMessage, 255, "CGraphe::GPHLierSommets(unsigned int uIdDepart, unsigned int uIdArrivee) : Le sommet d'arrivee %d est inconnu.\n", uIdArrivee);
+			throw CException(Sommet_Inconnu, sExceptionMessage);
+		}
 	}
-	else
-	{
-		throw CException(Sommet_Inconnu);
+	else {
+		sprintf_s(sExceptionMessage, 255, "CGraphe::GPHLierSommets(unsigned int uIdDepart, unsigned int uIdArrivee) : Tentative de relier le sommet %d avec lui-meme.\n", uIdArrivee);
+		throw CException(Auto_Referencement, sExceptionMessage);
 	}
 }
 
@@ -384,17 +367,28 @@ void CGraphe::GPHDelierSommets(unsigned int uIdDepart, unsigned int uIdArrivee)
 	int iPosDep = GPHChercherSommet(uIdDepart);
 	int iPosArr = GPHChercherSommet(uIdArrivee);
 
-	cout << pSOMGPHListeSommet[iPosDep].SOMLies(pSOMGPHListeSommet[iPosArr]) << endl;
+	std::cout << pSOMGPHListeSommet[iPosDep].SOMLies(pSOMGPHListeSommet[iPosArr]) << std::endl;
 
-	if (iPosArr != -1 && iPosDep != -1 && pSOMGPHListeSommet[iPosDep].SOMLies(pSOMGPHListeSommet[iPosArr]) == true) {
-		CArc ARCNArcA(uIdArrivee);
-		CArc ARCNArcD(uIdDepart);
-		pSOMGPHListeSommet[iPosDep].SOMRetirerArcSortant(ARCNArcA);
-		pSOMGPHListeSommet[iPosArr].SOMRetirerArcArrivant(ARCNArcD);
+	char sExceptionMessage[] = "";
+
+	if (iPosArr != -1){
+		if (iPosDep != -1) {
+			if (pSOMGPHListeSommet[iPosDep].SOMLies(pSOMGPHListeSommet[iPosArr]) == true) {
+				CArc ARCNArcA(uIdArrivee);
+				CArc ARCNArcD(uIdDepart);
+				pSOMGPHListeSommet[iPosDep].SOMRetirerArcSortant(ARCNArcA);
+				pSOMGPHListeSommet[iPosArr].SOMRetirerArcArrivant(ARCNArcD);
+			}
+		}
+		else {
+			sprintf_s(sExceptionMessage, 255, "CGraphe::GPHDelierSommets(unsigned int uIdDepart, unsigned int uIdArrivee) : Le sommet de depart %d est inconnu.\n", uIdDepart);
+			throw CException(Sommet_Inconnu, sExceptionMessage);
+		}
 	}
 	else
 	{
-		//throw CException(Sommet_Inconnu);
+		sprintf_s(sExceptionMessage, 255, "CGraphe::GPHDelierSommets(unsigned int uIdDepart, unsigned int uIdArrivee) : Le sommet d'arrivee %d est inconnu.\n", uIdArrivee);
+		throw CException(Sommet_Inconnu, sExceptionMessage);
 	}
 }
 
@@ -466,7 +460,9 @@ void CGraphe::GPHAfficherSommet(unsigned int uId)
 		pSOMGPHListeSommet[iPos].SOMAfficherSommet();
 	}
 	else {
-		cout << "Le sommet n'est pas dans le graphe." << endl;
+		char sExceptionMessage[] = "";
+		printf_s(sExceptionMessage, 255, "Le sommet %d n'est pas dans le graphe.\n", uId);
+		throw CException(Sommet_Inconnu, sExceptionMessage);
 	}
 }
 
@@ -482,11 +478,11 @@ void CGraphe::GPHAfficherSommet(unsigned int uId)
 *************************************************/
 void CGraphe::GPHAfficherGraphe()
 {
-	cout << "Nb sommets : " << uGPHTailleLSom << endl;
+	std::cout << "Nb sommets : " << uGPHTailleLSom << std::endl;
 	unsigned int uBoucle;
 	for (uBoucle = 0; uBoucle < uGPHTailleLSom; uBoucle++)
 		pSOMGPHListeSommet[uBoucle].SOMAfficherSommet();
-	cout << endl;
+	std::cout << std::endl;
 }
 
 /*************************************************

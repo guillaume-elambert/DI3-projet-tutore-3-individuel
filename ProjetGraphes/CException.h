@@ -2,16 +2,17 @@
 #define CEXCEPTION_H
 
 #include <iostream>
+#include <string>
 
 #define Erreur_Par_Defaut 0
 
-using namespace std;
 
 class CException
 {
 	//Attributs
 private:
 	unsigned int uEXCErreur;
+	char * sEXCEMessage;
 
 	//Constructeurs
 public:
@@ -38,7 +39,7 @@ public:
 	*****Sortie : néant
 	*****Entraine : néant
 	*************************************************/
-	CException(unsigned int uErreur);
+	CException(unsigned int uErreur, const char * sMessage);
 
 	//Destructeurs
 
@@ -75,21 +76,33 @@ public:
 	**************************************************
 	*****Entrée : unsigned int uErreur le nouveau code d'erreur.
 	*****Nécessite : néant
-	*****Sortie : IdErreur
+	*****Sortie : néant
 	*****Entraine : néant
 	*************************************************/
 	void EXCSetErreur(unsigned int uErreur);
 
 	/*************************************************
-	*****NOM : EXCAfficherMessageErreur
+	*****NOM : EXCGetMessage
 	**************************************************
-	*****Affiche dans la sortie standard un message d'erreur approprié.
+	*****Accesseur en lecture du message d'erreur
 	**************************************************
-	*****Entrée : idErreur
+	*****Entrée : néant
+	*****Nécessite : néant
+	*****Sortie : sEXCEMessage
+	*****Entraine : néant
+	*************************************************/
+	const char * EXCGetMessage(void);
+
+	/*************************************************
+	*****NOM : EXCSetMessage
+	**************************************************
+	*****Accesseur en écriture du message d'erreur
+	**************************************************
+	*****Entrée : std::string sMessage le nouveau message d'erreur.
 	*****Nécessite : néant
 	*****Sortie : néant
 	*****Entraine : néant
 	*************************************************/
-	void EXCAfficherMessageErreur(void);
+	void EXCSetMessage(const char * sMessage);
 };
 #endif

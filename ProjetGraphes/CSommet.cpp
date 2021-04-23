@@ -1,6 +1,5 @@
 #include "CSommet.h"
 
-
 /*************************************************
 *****NOM : CSommet
 **************************************************
@@ -240,8 +239,12 @@ int CSommet::SOMChercherArcArrivant(unsigned int uSOMIdDestination)
 *************************************************/
 CArc CSommet::SOMLireListeA(unsigned int uPos)
 {
-	if (uPos > uSOMTailleListeA - 1)
-		throw CException(Lecture_Impossible);
+	if (uPos > uSOMTailleListeA - 1) {
+		char sExceptionMessage[] = "";
+		sprintf_s(sExceptionMessage, 255, "CSommet::SOMLireListeA(unsigned int uPos) : Impossible de lire l'arc d'arrivee %d.\n", uPos);
+		throw CException(Lecture_Impossible, sExceptionMessage);
+	}
+		
 	return pARCSOMListeArcsArrivants[uPos];
 }
 
@@ -352,8 +355,11 @@ int CSommet::SOMChercherArcSortant(unsigned int uSOMIdDestination)
 *************************************************/
 CArc CSommet::SOMLireListeS(unsigned int uPos)
 {
-	if (uPos > uSOMTailleListeS - 1)
-		throw CException(Lecture_Impossible);
+	if (uPos > uSOMTailleListeS - 1) {
+		char sExceptionMessage[] = "";
+		sprintf_s(sExceptionMessage, 255, "CSommet::SOMLireListeS(unsigned int uPos) : Impossible de lire l'arc de sorti %d.\n", uPos);
+		throw CException(Lecture_Impossible, sExceptionMessage);
+	}
 	return pARCSOMListeArcsSortants[uPos];
 }
 
@@ -415,6 +421,8 @@ bool CSommet::SOMLies(CSommet & SOMParam)
 		return true;
 	return false;
 }
+
+
 /*************************************************
 *****NOM : SOMInverser
 **************************************************
@@ -426,7 +434,16 @@ bool CSommet::SOMLies(CSommet & SOMParam)
 *****Entraîne : /
 *************************************************/
 void CSommet::SOMInverser() {
-	CArc * pARCTmp = new CArc[uSOMTailleListeA];
+	CArc *ARCTmp = this->pARCSOMListeArcsArrivants;
+	unsigned uiNbArrivants = this->uSOMTailleListeA;
+
+	this->pARCSOMListeArcsArrivants = this->pARCSOMListeArcsSortants;
+	this->uSOMTailleListeA = this->uSOMTailleListeS;
+
+	this->pARCSOMListeArcsSortants = ARCTmp;
+	this->uSOMTailleListeS = uiNbArrivants;
+
+	/*CArc * pARCTmp = new CArc[uSOMTailleListeA];
 	unsigned int uBoucle;
 	unsigned int uTmp;
 
@@ -448,7 +465,7 @@ void CSommet::SOMInverser() {
 	delete[] pARCTmp;
 	uTmp = uSOMTailleListeA;
 	uSOMTailleListeA = uSOMTailleListeS;
-	uSOMTailleListeS = uTmp;
+	uSOMTailleListeS = uTmp;*/
 }
 
 
@@ -464,13 +481,22 @@ void CSommet::SOMInverser() {
 *************************************************/
 void CSommet::SOMAfficherSommet() {
 	unsigned int uBoucle;
-	cout << "L'ID du sommet est :" << SOMGetId() << endl;
-	cout << "La liste des arcs arrivants est :" << endl;
+	std::cout << "L'ID du sommet est : " << uSOMId << std::endl;
+	
+	std::cout << "La liste des arcs arrivants est :" << std::endl;
 	for (uBoucle = 0; uBoucle < uSOMTailleListeA; uBoucle++)
-		cout << "                     " << pARCSOMListeArcsArrivants[uBoucle].ARCGetDestination() << endl;
-	cout << "La liste des arcs sortants est :" << endl;
+		std::cout << "\t" << pARCSOMListeArcsArrivants[uBoucle].ARCGetDestination() << ((uBoucle+1) % 3 == 0 ? "\n" : "");
+
+	if (uBoucle % 3 != 0){
+		std::cout << std::endl;
+	}
+	
+	std::cout << "La liste des arcs sortants est :" << std::endl;
 	for (uBoucle = 0; uBoucle < uSOMTailleListeS; uBoucle++)
-		cout << "                     " << pARCSOMListeArcsSortants[uBoucle].ARCGetDestination() << endl;
-	cout << endl;
+		std::cout << "\t" << pARCSOMListeArcsSortants[uBoucle].ARCGetDestination() << ((uBoucle+1) % 3 == 0 ? "\n" : "");
+	if (uBoucle % 3 != 0){
+		std::cout << std::endl;
+	}
+	std::cout << std::endl;
 }
 

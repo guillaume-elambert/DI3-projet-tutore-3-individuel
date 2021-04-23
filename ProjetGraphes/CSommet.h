@@ -2,12 +2,12 @@
 #define CSOMMET_H
 
 #include <iostream>
+#include <string>
 #include "CException.h"
 #include "CArc.h"
 
 #define Lecture_Impossible 20
 
-using namespace std;
 
 class CSommet
 {
@@ -112,6 +112,8 @@ public:
 	*****Entraîne : La liste des arcs contient maintenant ARCParam.
 	*************************************************/
 	void SOMAjouterArcArrivant(CArc & ARCParam);
+
+
 	/*************************************************
 	*****NOM : SOMRetirerArcArrivant
 	**************************************************
@@ -123,6 +125,8 @@ public:
 	*****Entraîne : La liste des arcs ne contient maintenant plus ARCParam.
 	*************************************************/
 	void SOMRetirerArcArrivant(CArc & ARCParam);
+
+
 	/*************************************************
 	*****NOM : SOMChercherArcArrivant
 	**************************************************
@@ -134,6 +138,8 @@ public:
 	*****Entraîne : /
 	*************************************************/
 	int SOMChercherArcArrivant(unsigned int uSOMIdDestination);
+
+
 	/*************************************************
 	*****NOM : SOMLireListeA
 	**************************************************
@@ -146,6 +152,7 @@ public:
 	*************************************************/
 	CArc SOMLireListeA(unsigned int uPos);
 
+
 	/*************************************************
 	*****NOM : SOMAjouterArcSortant
 	**************************************************
@@ -157,6 +164,8 @@ public:
 	*****Entraîne : La liste des arcs contient maintenant ARCParam.
 	*************************************************/
 	void SOMAjouterArcSortant(CArc & ARCParam);
+
+
 	/*************************************************
 	*****NOM : SOMRetirerArcSortant
 	**************************************************
@@ -168,6 +177,8 @@ public:
 	*****Entraîne : La liste des arcs ne contient maintenant plus ARCParam.
 	*************************************************/
 	void SOMRetirerArcSortant(CArc & ARCParam);
+
+
 	/*************************************************
 	*****NOM : SOMChercherArcSortant
 	**************************************************
@@ -179,6 +190,8 @@ public:
 	*****Entraîne : /
 	*************************************************/
 	int SOMChercherArcSortant(unsigned int uSOMIdDestination);
+
+
 	/*************************************************
 	*****NOM : SOMLireListeS
 	**************************************************
@@ -190,6 +203,7 @@ public:
 	*****Entraîne : /
 	*************************************************/
 	CArc SOMLireListeS(unsigned int uPos);
+
 
 	/*************************************************
 	*****NOM : operator=
@@ -203,6 +217,7 @@ public:
 	*************************************************/
 	CSommet & operator=(const CSommet & SOMParam);
 
+
 	/*************************************************
 	*****NOM : SOMLies
 	**************************************************
@@ -215,6 +230,7 @@ public:
 	*************************************************/
 	bool SOMLies(CSommet & SOMParam);
 
+
 	/*************************************************
 	*****NOM : SOMInverser
 	**************************************************
@@ -226,6 +242,7 @@ public:
 	*****Entraîne : /
 	*************************************************/
 	void SOMInverser();
+
 
 	/*************************************************
 	*****NOM : SOMAfficherSommet
