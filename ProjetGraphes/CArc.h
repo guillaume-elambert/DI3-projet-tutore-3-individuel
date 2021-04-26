@@ -11,63 +11,40 @@ private:
 
 public:
 
-	/*************************************************
-	*****NOM : CArc
-	**************************************************
-	*****Constructeur par défaut
-	**************************************************
-	*****Entrée : néant
-	*****Nécessite : Ne pas utiliser.
-	*****Sortie : néant
-	*****Entraîne : Lève une exception.
-	*************************************************/
+	/*!
+	 * Constructeur par défaut
+	 * 
+	 */
 	CArc(void);
-	/*************************************************
-	*****NOM : CArc
-	**************************************************
-	*****Constructeur de confort.
-	**************************************************
-	*****Entrée : unsigned int uARCDestination
-	*****Nécessite : néant
-	*****Sortie : néant
-	*****Entraîne : Création d'un arc ayant pour destination unsigned int uARCDestination.
-	*************************************************/
+
+	
+	/*!
+	 * Constructeur de confort
+	 * 
+	 * \param uARCDestination Le numéro du sommet de destination de l'arc
+	 */
 	CArc(unsigned int uARCDestination);
-	/*************************************************
-	*****NOM : CArc
-	**************************************************
-	*****Constructeur de recopie.
-	**************************************************
-	*****Entrée : CArc & ARCParam
-	*****Nécessite : néant
-	*****Sortie : néant
-	*****Entraîne : Création d'un arc copie de ARCParam.
-	*************************************************/
+	
+
+	/*!
+	 * Constructeur de recopie
+	 * 
+	 * \param ARCParam L'arc à copier
+	 */
 	CArc(CArc & ARCParam);
-	/*************************************************
-	*****NOM : ~CArc
-	**************************************************
-	*****Destructeur par défaut.
-	**************************************************
-	*****Entrée : néant
-	*****Nécessite : néant
-	*****Sortie : néant
-	*****Entraîne : L'objet est prêt à être désalloué.
-	*************************************************/
+	
+	/*!
+	 * Destructeur par défaut
+	 * 
+	 */
 	~CArc(void);
 
-	//Accesseur :
-
-	/*************************************************
-	*****NOM : ARCGetDestination
-	**************************************************
-	*****Accesseur en lecture de SOMDestination
-	**************************************************
-	*****Entrée : néant
-	*****Nécessite : néant
-	*****Sortie : uARCDestination la destination de l'arc.
-	*****Entraîne : /
-	*************************************************/
+	
+	/*!
+	 * Accesseur en lecture de SOMDestination
+	 * 
+	 * \return uARCDestination la destination de l'arc.
+	 */
 	unsigned int ARCGetDestination(void);
 };
 #endif

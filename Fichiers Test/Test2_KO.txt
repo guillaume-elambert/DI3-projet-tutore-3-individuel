@@ -1,9 +1,10 @@
-NBSommets=1
+NBSommets=2
 NBArcs=2
 Sommets=[
 Numero=1
 Numero=2
 ]
 Arcs=[
-Debut=1, Fin=1
+Debut=1, Fin=2
+Debut=1, Fin=2
 ]

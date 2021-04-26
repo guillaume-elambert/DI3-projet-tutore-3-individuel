@@ -1,86 +1,76 @@
 #include "CException.h"
 
-/*************************************************
-*****NOM : CException
-**************************************************
-*****Constructeur par défaut
-**************************************************
-*****Entrée : néant
-*****Nécessite : néant
-*****Sortie : néant
-*****Entraine : néant
-*************************************************/
+/*!
+ * Constructeur par défaut
+ *
+ */
 CException::CException()
 {
 	uEXCErreur = Erreur_Par_Defaut;
 }
 
-/*************************************************
-*****NOM : CException
-**************************************************
-*****Constructeur de confort
-**************************************************
-*****Entrée : unsiged int uErreur le code d'erreur et char * sMessage le message d'erreur
-*****Nécessite : néant
-*****Sortie : néant
-*****Entraine : néant
-*************************************************/
+
+/*!
+ * Constructeur de confort
+ *
+ * \param uErreur Le code de l'erreur
+ * \param sMessage Le message de l'erreur
+ */
 CException::CException(unsigned int uErreur, const char * sMessage)
 {
 	uEXCErreur = uErreur;
 	sEXCEMessage = _strdup(sMessage);
 }
 
-/*************************************************
-*****NOM : ~CException
-**************************************************
-*****Destructeur par défaut
-**************************************************
-*****Entrée : néant
-*****Nécessite : néant
-*****Sortie : néant
-*****Entraine : néant
-*************************************************/
+
+/*!
+ * Destructeur par defaut
+ *
+ */
 CException::~CException()
 {
-	delete[] sEXCEMessage;
+	//free(sEXCEMessage);
 }
 
-/*************************************************
-*****NOM : EXCGetErreur
-**************************************************
-*****Accesseur en lecture du code d'erreur
-**************************************************
-*****Entrée : néant
-*****Nécessite : néant
-*****Sortie : uErreur
-*****Entraine : néant
-*************************************************/
+
+/*!
+ * Accesseur en lecture du code d'erreur
+ *
+ * \return Le code de l'erreur
+ */
 unsigned int CException::EXCGetErreur(void)
 {
 	return uEXCErreur;
 }
 
-/*************************************************
-*****NOM : EXCSetErreur
-**************************************************
-*****Accesseur en écriture du code d'erreur
-**************************************************
-*****Entrée : unsigned int uErreur le nouveau code d'erreur.
-*****Nécessite : néant
-*****Sortie : néant
-*****Entraine : néant
-*************************************************/
+
+/*!
+ * Accesseur en écriture du code d'erreur
+ *
+ * \param uErreur Le nouveau code d'erreur.
+ */
 void CException::EXCSetErreur(unsigned int uErreur)
 {
 	uEXCErreur = uErreur;
 }
 
+
+/*!
+ * Accesseur en lecture du message d'erreur
+ *
+ * \return Le message de l'erreur
+ */
 const char * CException::EXCGetMessage(void)
 {
 	return sEXCEMessage;
 }
 
+
+/*!
+ * Accesseur en écriture du message d'erreur
+ *
+ * \param sMessage Le nouveau message d'erreur.
+ */
 void CException::EXCSetMessage(const char * sMessage)
 {
 	sEXCEMessage = _strdup(sMessage);

@@ -17,92 +17,60 @@ private:
 	//Constructeurs
 public:
 
-	/*************************************************
-	*****NOM : CException
-	**************************************************
-	*****Constructeur par défaut
-	**************************************************
-	*****Entrée : néant
-	*****Nécessite : néant
-	*****Sortie : néant
-	*****Entraine : néant
-	*************************************************/
+	/*!
+	 * Constructeur par défaut
+	 * 
+	 */
 	CException();
 
-	/*************************************************
-	*****NOM : CException
-	**************************************************
-	*****Constructeur de confort
-	**************************************************
-	*****Entrée : unsiged int uErreur le code d'erreur.
-	*****Nécessite : néant
-	*****Sortie : néant
-	*****Entraine : néant
-	*************************************************/
+
+	/*!
+	 * Constructeur de confort
+	 * 
+	 * \param uErreur Le code de l'erreur
+	 * \param sMessage Le message de l'erreur
+	 */
 	CException(unsigned int uErreur, const char * sMessage);
 
 	//Destructeurs
 
-	/*************************************************
-	*****NOM : ~CException
-	**************************************************
-	*****Destructeur par défaut
-	**************************************************
-	*****Entrée : néant
-	*****Nécessite : néant
-	*****Sortie : néant
-	*****Entraine : néant
-	*************************************************/
+	/*!
+	 * Destructeur par defaut
+	 * 
+	 */
 	~CException();
 
 	//Accesseurs
 
-	/*************************************************
-	*****NOM : EXCGetErreur
-	**************************************************
-	*****Accesseur en lecture du code d'erreur
-	**************************************************
-	*****Entrée : néant
-	*****Nécessite : néant
-	*****Sortie : uErreur
-	*****Entraine : néant
-	*************************************************/
+	/*!
+	 * Accesseur en lecture du code d'erreur
+	 * 
+	 * \return Le code de l'erreur
+	 */
 	unsigned int EXCGetErreur(void);
 
-	/*************************************************
-	*****NOM : EXCSetErreur
-	**************************************************
-	*****Accesseur en écriture du code d'erreur
-	**************************************************
-	*****Entrée : unsigned int uErreur le nouveau code d'erreur.
-	*****Nécessite : néant
-	*****Sortie : néant
-	*****Entraine : néant
-	*************************************************/
+	
+	/*!
+	 * Accesseur en écriture du code d'erreur
+	 * 
+	 * \param uErreur Le nouveau code d'erreur.
+	 */
 	void EXCSetErreur(unsigned int uErreur);
 
-	/*************************************************
-	*****NOM : EXCGetMessage
-	**************************************************
-	*****Accesseur en lecture du message d'erreur
-	**************************************************
-	*****Entrée : néant
-	*****Nécessite : néant
-	*****Sortie : sEXCEMessage
-	*****Entraine : néant
-	*************************************************/
+	
+	/*!
+	 * Accesseur en lecture du message d'erreur
+	 * 
+	 * \return Le message de l'erreur
+	 */
 	const char * EXCGetMessage(void);
 
-	/*************************************************
-	*****NOM : EXCSetMessage
-	**************************************************
-	*****Accesseur en écriture du message d'erreur
-	**************************************************
-	*****Entrée : std::string sMessage le nouveau message d'erreur.
-	*****Nécessite : néant
-	*****Sortie : néant
-	*****Entraine : néant
-	*************************************************/
+
+	/*!
+	 * Accesseur en écriture du message d'erreur
+	 * 
+	 * \param sMessage Le nouveau message d'erreur.
+	 */
 	void EXCSetMessage(const char * sMessage);
 };
 #endif
