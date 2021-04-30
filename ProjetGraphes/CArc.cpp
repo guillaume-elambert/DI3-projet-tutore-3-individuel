@@ -13,7 +13,7 @@ CArc::CArc(void)
 /*!
  * Constructeur de confort
  * 
- * \param uARCDestination Le numéro du sommet de destination de l'arc
+ * \param uARCDestinationParam Le numéro du sommet de destination de l'arc
  */
 CArc::CArc(unsigned int uARCDestinationParam)
 {

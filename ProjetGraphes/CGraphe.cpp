@@ -597,7 +597,7 @@ CGraphe & CGraphe::GPHRenverserGraphe() {
  * Surcharge de l'opérateur =
  * Copie le contenu de GPHParam dans l'objet appelant
  *
- * \param GPHParam
+ * \param GPHParam L'objet CGraphe à copier
  * \return Un pointeur sur l'objet appelant, copie de GPHParam
  */
 CGraphe & CGraphe::operator=(CGraphe & GPHParam)

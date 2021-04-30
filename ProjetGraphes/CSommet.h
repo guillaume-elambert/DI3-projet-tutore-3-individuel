@@ -156,9 +156,9 @@ public:
 
 	/*!
 	 * Teste si deux sommets sont liés dans le sens *this -> SOMParam
-	 * 
-	 * \param SOMParam true s'il existe un arc allant de cet objet vers SOMParam, false sinon.
-	 * \return 
+	 *
+	 * \param SOMParam L'objet CSommet dont il faut vérifier la connexion avec this
+	 * \return true s'il existe un arc allant de cet objet vers SOMParam, false sinon.
 	 */
 	bool SOMLies(CSommet & SOMParam);
 
