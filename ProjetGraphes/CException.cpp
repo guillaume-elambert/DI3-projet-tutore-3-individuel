@@ -1,7 +1,7 @@
 #include "CException.h"
 
 /*!
- * Constructeur par défaut
+ * Constructeur par dÃ©faut
  *
  */
 CException::CException()
@@ -29,7 +29,7 @@ CException::CException(unsigned int uErreur, const char * sMessage)
  */
 CException::~CException()
 {
-	//free(sEXCEMessage);
+	if(sEXCEMessage) free(sEXCEMessage);
 }
 
 
@@ -45,7 +45,7 @@ unsigned int CException::EXCGetErreur(void)
 
 
 /*!
- * Accesseur en écriture du code d'erreur
+ * Accesseur en Ã©criture du code d'erreur
  *
  * \param uErreur Le nouveau code d'erreur.
  */
@@ -67,7 +67,7 @@ const char * CException::EXCGetMessage(void)
 
 
 /*!
- * Accesseur en écriture du message d'erreur
+ * Accesseur en Ã©criture du message d'erreur
  *
  * \param sMessage Le nouveau message d'erreur.
  */

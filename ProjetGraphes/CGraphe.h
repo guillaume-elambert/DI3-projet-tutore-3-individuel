@@ -3,35 +3,36 @@
 
 #include <regex>
 #include <fstream>
-#include <string>
-//#include "CGraphe.h"
+#include <string.h>
 #include "CSommet.h"
 #include "CArc.h"
 #include "CException.h"
 
 
-#define Ouverture_Fichier_Impossible 1
-#define Auto_Referencement			 2
-#define Erreur_Syntaxe				 3
-#define Erreur_NbSommets			 4
-#define Erreur_NbArcs				 5
-#define Sommet_Inconnu				 6
-#define Sommet_Existant				 7
-#define Arc_Inconnu					 8
-#define Arc_Existant				 9
+#define CGRAPHE_Chaine_Initialisation_Nulle	 1
+#define CGRAPHE_Ouverture_Fichier_Impossible 2
+#define CGRAPHE_Auto_Referencement			 3
+#define CGRAPHE_Erreur_Syntaxe				 4
+#define CGRAPHE_Erreur_NbSommets			 5
+#define CGRAPHE_Erreur_NbArcs				 6
+#define CGRAPHE_Sommet_Inconnu				 7
+#define CGRAPHE_Sommet_Existant				 8
+#define CGRAPHE_Arc_Inconnu					 9
+#define CGRAPHE_Arc_Existant				 10
+#define CGRAPHE_Alloc_Echouee				 11
 
 class CGraphe
 {
 private :
 
-	CSommet * pSOMGPHListeSommet;
+	CSommet ** pSOMGPHListeSommet;
 	unsigned int uGPHTailleLSom;
 
 
 public:
 
 	/*!
-	 * Constructeur par dÈfaut
+	 * Constructeur par d√©faut
 	 * 
 	 */
 	CGraphe(void);
@@ -40,23 +41,24 @@ public:
 	/*!
 	 * Constructeur de recopie
 	 * 
-	 * \param GPHParam L'objet CGraphe ‡ copier
+	 * \param GPHParam L'objet CGraphe √† copier
 	 */
 	CGraphe(CGraphe & GPHParam);
 
 	
 	/*!
 	 * Constructeur de confort
-	 * CrÈation d'un graphe vide et correctement initialisÈ ‡ partir du fichier stockÈ dans sChemin. 
-	 * OU Une erreur si le chemin ou le fichier est mauvais.
-	 * 
-	 * \param cpInput Le chemin vers le fichier contenant les informations du graphe ‡ crÈer.
+	 * Cr√©ation d'un graphe correctement initialis√© √† partir d'une cha√Æne de caract√®re OU un chemin vers un fichier contenant la cha√Æne de caract√®res.
+	 * OU Une erreur si contenu est mal formatt√© ou qu'il contient des incoh√©rences ou des erreurs.
+	 *
+	 * \param cpContenu La cha√Æne de caract√®re utilis√©e pour initialiser l'objet CGraphe
+	 * \param bContenuEstChemin Un bool√©en qui indique si la variable cpContenu correspond √† un chemin vers un fichier contenant l'initialisation d'un CGraphe (true) ou s'il s'agit directement d'une cha√Æne de caract√®re d'initialisation
 	 */
-	CGraphe(const char * cpInput);
+	CGraphe(const char * cpContenu, bool bContenuEstChemin);
 
 
 	/*!
-	 * Destructeur par dÈfaut
+	 * Destructeur par d√©faut
 	 * 
 	 */
 	~CGraphe(void);
@@ -67,17 +69,17 @@ public:
 	 * Cherche si le sommet existe
 	 *
 	 * \param uId Un numero de sommet
-	 * \return L'index du sommet cherchÈ
+	 * \return L'index du sommet cherch√©
 	 */
 	int GPHChercherSommet(unsigned int uId);
 
 
 	/*!
 	 * Ajoute un nouveau sommet dans le graphe. 
-	 * OU renvoie une erreur si le sommet existe dÈj‡
+	 * OU renvoie une erreur si le sommet existe d√©j√†
 	 * 
-	 * \param uNumero Le numÈro du nouveau sommet charchÈ.
-	 * \return L'index du sommet crÈÈ
+	 * \param uNumero Le num√©ro du nouveau sommet charch√©.
+	 * \return L'index du sommet cr√©√©
 	 */
 	unsigned int GPHAjouterSommet(unsigned int uNumero);
 
@@ -88,65 +90,65 @@ public:
 	 * Supprime le sommet de numero uId du graphe ainsi que tout ses liens avec les autres sommets. 
 	 * OU renvoie une erreur si le sommet n'existe pas
 	 * 
-	 * \param uId NumÈro du sommet ‡ supprimer
+	 * \param uId Num√©ro du sommet √† supprimer
 	 */
 	void GPHSupprimerSommet(unsigned int uId);
 
 
 
 	/*!
-	 * VÈrifie si deux sommets sont liÈs dans le sens sommet n∞ uSommetDep vers sommet n∞ uSommetArr
+	 * V√©rifie si deux sommets sont li√©s dans le sens sommet n¬∞ uSommetDep vers sommet n¬∞ uSommetArr
 	 * 
-	 * \param uSommetDep Le sommet de dÈpart
-	 * \param uSommetArr Le sommet d'arrivÈ
-	 * \return true si les deux sommets sons liÈs dans le sens sommet n∞ uSommetDep vers sommet n∞ uSommetArr false sinon
+	 * \param uSommetDep Le sommet de d√©part
+	 * \param uSommetArr Le sommet d'arriv√©
+	 * \return true si les deux sommets sons li√©s dans le sens sommet n¬∞ uSommetDep vers sommet n¬∞ uSommetArr false sinon
 	 */
 	bool GPHLiees(unsigned int uSommetDep, unsigned int uSommetArr);
 
 
 	/*!
-	 * Lie deux sommets du graphe (crÈÈ l'arc Sommet de n∞ uIdDepart vers Sommet de n∞ uIdArrivee).
-	 * OU renvoie une erreur s'il existe dÈj‡ un arc dirigÈ entre les deux sommets (c‡d de Sommet de n∞ uIdDepart vers Sommet de n∞ uIdArrivee)
+	 * Lie deux sommets du graphe (cr√©√© l'arc Sommet de n¬∞ uIdDepart vers Sommet de n¬∞ uIdArrivee).
+	 * OU renvoie une erreur s'il existe d√©j√† un arc dirig√© entre les deux sommets (c√†d de Sommet de n¬∞ uIdDepart vers Sommet de n¬∞ uIdArrivee)
 	 * 
-	 * \param uIdDepart Le numÈro du sommet de dÈpart
-	 * \param uIdArrivee Le numÈro du sommet d'arrivÈ
+	 * \param uIdDepart Le num√©ro du sommet de d√©part
+	 * \param uIdArrivee Le num√©ro du sommet d'arriv√©
 	 */
 	void GPHLierSommets(unsigned int uIdDepart, unsigned int uIdArrivee);
 
 	
 
 	/*!
-	 * DÈlie deux sommets du graphe (supprime l'arc Sommet de n∞ uIdDepart vers Sommet de n∞ uIdArrivee). 
+	 * D√©lie deux sommets du graphe (supprime l'arc Sommet de n¬∞ uIdDepart vers Sommet de n¬∞ uIdArrivee). 
 	 * OU renvoie une erreur si l'arc n'existe pas
 	 * 
-	 * \param uIdDepart Le numÈro du sommet de dÈpart
-	 * \param uIdArrivee Le numÈro du sommet d'arrivÈ
+	 * \param uIdDepart Le num√©ro du sommet de d√©part
+	 * \param uIdArrivee Le num√©ro du sommet d'arriv√©
 	 */
 	void GPHDelierSommets(unsigned int uIdDepart, unsigned int uIdArrivee);
 
 
 	/*!
-	 * Renvoie les numÈros des arcs sortants d'un sommet.
+	 * Renvoie les num√©ros des arcs sortants d'un sommet.
 	 * 
 	 * \param uId Le numero du sommet dont on veut les arcs sortants
-	 * \return Un tableau d'entiers contenant les arcs sortant et en premiËre position le nombre d'ÈlÈments scannÈs.
+	 * \return Un tableau d'entiers contenant les arcs sortant et en premi√®re position le nombre d'√©l√©ments scann√©s.
 	 */
 	unsigned int * GPHLireArcsS(unsigned int uId);
 
 
 	/*!
-	 * Renvoie les numÈros des arcs arrivants d'un sommet.
+	 * Renvoie les num√©ros des arcs arrivants d'un sommet.
 	 *
 	 * \param uId Le numero du sommet dont on veut les arcs arrivants
-	 * \return Un tableau d'entiers contenant les arcs arrivants et en premiËre position le nombre d'ÈlÈments scannÈs.
+	 * \return Un tableau d'entiers contenant les arcs arrivants et en premi√®re position le nombre d'√©l√©ments scann√©s.
 	 */
 	unsigned int * GPHLireArcsA(unsigned int uId);
 
 
 	/*!
-	 * Affiche le sommet de numÈro uId
+	 * Affiche le sommet de num√©ro uId
 	 * 
-	 * \param uId Le numÈro du sommet ‡ afficher
+	 * \param uId Le num√©ro du sommet √† afficher
 	 */
 	void GPHAfficherSommet(unsigned int uId);
 	
@@ -162,16 +164,16 @@ public:
 	/*!
 	 * Inverse les arcs du graphe : les arcs sortants deviennent arrivants et vice-versa
 	 * 
-	 * \return Un nouvel objet CGraphe, inversÈ par rapport ‡ 'objet appelant
+	 * \return Un nouvel objet CGraphe, invers√© par rapport √† 'objet appelant
 	 */
 	CGraphe & GPHRenverserGraphe();
 
 
 	/*!
-	 * Surcharge de l'opÈrateur =
+	 * Surcharge de l'op√©rateur =
 	 * Copie le contenu de GPHParam dans l'objet appelant
 	 *
-	 * \param GPHParam L'objet CGraphe ‡ copier
+	 * \param GPHParam L'objet CGraphe √† copier
 	 * \return Un pointeur sur l'objet appelant, copie de GPHParam
 	 */
 	CGraphe & operator=(CGraphe & GPHParam);

@@ -2,12 +2,12 @@
 
 
 /*!
- * Constructeur par dÈfaut
+ * Constructeur par d√©faut
  *
  */
 CGraphe::CGraphe(void)
 {
-	pSOMGPHListeSommet = new CSommet[0];
+	pSOMGPHListeSommet = NULL;
 	uGPHTailleLSom = 0;
 }
 
@@ -15,158 +15,201 @@ CGraphe::CGraphe(void)
 /*!
  * Constructeur de recopie
  *
- * \param GPHParam L'objet CGraphe ‡ copier
+ * \param GPHParam L'objet CGraphe √† copier
  */
 CGraphe::CGraphe(CGraphe & GPHParam) {
 
-	uGPHTailleLSom = GPHParam.uGPHTailleLSom;
-	pSOMGPHListeSommet = new CSommet[GPHParam.uGPHTailleLSom];
-	unsigned int uBoucle;
-	
-	//On copie la liste des sommets de GPHParam
-	for (uBoucle = 0; uBoucle < uGPHTailleLSom; uBoucle++) {
-		pSOMGPHListeSommet[uBoucle] = GPHParam.pSOMGPHListeSommet[uBoucle];
-	}
+	*this = GPHParam;
 }
 
 
 /*!
  * Constructeur de confort
- * CrÈation d'un graphe correctement initialisÈ ‡ partir d'une chÓane de caractËre.
- * OU Une erreur si contenu est mal formattÈ ou qu'il contient des incohÈrences ou des erreurs.
+ * Cr√©ation d'un graphe correctement initialis√© √† partir d'une cha√Æne de caract√®re OU un chemin vers un fichier contenant la cha√Æne de caract√®res. 
+ * OU Une erreur si contenu est mal formatt√© ou qu'il contient des incoh√©rences ou des erreurs.
  *
- * \param cpContenu La chaÓne de caractËre utilisÈe pour initialiser l'objet CGraphe
+ * \param cpContenu La cha√Æne de caract√®re utilis√©e pour initialiser l'objet CGraphe
+ * \param bContenuEstChemin Un bool√©en qui indique si la variable cpContenu correspond √† un chemin vers un fichier contenant l'initialisation d'un CGraphe (true) ou s'il s'agit directement d'une cha√Æne de caract√®re d'initialisation
  */
-CGraphe::CGraphe(const char *cpContenu)
+CGraphe::CGraphe(const char *cpContenu, bool bContenuEstChemin)
 {
+	if (cpContenu) {
+		char *cpContentToUse;
 
-	//Initialisation par dÈfaut
-	pSOMGPHListeSommet = new CSommet[0];
-	uGPHTailleLSom = 0;
+		//Entr√©e : La variable cpContenu correspond au chemin vers un fichier
+		//		=> On ouvre le fichier et on utilise le contenu pour l'initialisation
+		if (bContenuEstChemin) {
+			std::string sFileContent(""), sBuffer;
+			std::fstream FILfichier(cpContenu);
+			char sExceptionMessage[] = "";
 
-	char sExceptionMessage[] = "";
-	
-	std::string sRegexResult;
-	std::regex rRegex("NBSommets[ \\t]*=[ \\t]*([0-9]+)[ \\t]*\\nNBArcs[ \\t]*=[ \\t]*([0-9]+)[ \\t]*\\nSommets[ \\t]*=[ \\t]*(\\[)[ \\t]*\\n((?:Numero[ \\t]*=[ \\t]*[0-9]+\\n)*)\\][ \\t]*\\nArcs[ \\t]*=[ \\t]*(\\[)[ \\t]*\\n((?:Debut[ \\t]*=[ \\t]*[0-9]+[ \\t]*,[ \\t]*Fin[ \\t]*=[ \\t]*([0-9]+)[ \\t]*\\n)*)\\]\\s*");
-	//std::regex rRegex("NBSommets=([0-9]+)\\nNBArcs=([0-9]+)\\nSommets=(\\[)\\n((?:Numero=[0-9]+\\n)*)\\]\\nArcs=(\\[)\\n((?:Debut=[0-9]+, Fin=([0-9]+)\\n)*)\\]");
-	std::cmatch cmMatchGlobal, cmMatchNumeric;
-
-	int iNbSommets, iNbArcs;
-	int iNbInit = 0;
-
-	std::regex rNumericRegex("[0-9]+");
-
-	//EntrÈe : Le fichier correspond ‡ l'expression rÈguliËre
-	//Sinon  : On renvoie une erreur
-	if (std::regex_match(cpContenu, cmMatchGlobal, rRegex)) {
-
-		//On parcourt l'ensemble des rÈsultats des groupes de capture du fichier
-		for (unsigned uiRegexIndex = 1; uiRegexIndex < cmMatchGlobal.size(); ++uiRegexIndex) {
-			sRegexResult = cmMatchGlobal[uiRegexIndex].str();
-
-			//On vÈrifie si la ligne suivante est une initialisation du contenu
-			switch (sRegexResult[sRegexResult.length() - 1]) {
-			case '[':
-
-				++iNbInit;
-
-				//EntrÈe : Il y a bien un rÈsultat de la recherche regex aprËs celui courrant
-				//VÈrification normalement inutile car regex_match a renvoyÈ true
-				if (++uiRegexIndex < cmMatchGlobal.size()) {
-
-					sRegexResult = cmMatchGlobal[uiRegexIndex].str();
-
-					int iCurrentResIndex = 0, iResValue, iTempInitValue;
-
-					//On parcourt la zone d'initialisation
-					while (std::regex_search(sRegexResult.c_str(), cmMatchNumeric, rNumericRegex)) {
-
-						//On rÈcupËre la valeur du sommet/de l'arc
-						iResValue = atoi(cmMatchNumeric.str().c_str());
-
-						//EntrÈe : On est dans la partie d'initialisation des sommets
-						//		=> On ajoute le sommet
-						if (iNbInit == 1) {
-							this->GPHAjouterSommet(iResValue);
-						}
-						//EntrÈe : On est dans la partie d'initialisation des arcs
-						else {
-							//EntrÈe : On est sur un idex pair (c‡d on est sur un dÈbut)
-							//		=> On stock la valeur pour la rÈutiliser quand on sera sur une fin de l'arc
-							if (iCurrentResIndex % 2 == 0) {
-								iTempInitValue = iResValue;
-							}
-							else {
-								//On relie les deux sommets
-								this->GPHLierSommets(iTempInitValue, iResValue);
-							}
-						}
-
-						//On passe ‡ la suite de la chaÓne
-						sRegexResult = cmMatchNumeric.suffix();
-						++iCurrentResIndex;
-					}
-
-					//EntrÈe : le nombre de sommets dÈfinit est diffÈrent que celui trouvÈ
-					if (iNbInit == 1 && iCurrentResIndex != iNbSommets) {
-						sprintf_s(sExceptionMessage, 255, "CGraphe::CGraphe(const char *cpContenu) : %d sommets attendus %d sommets obtenus\n", iNbSommets, iCurrentResIndex);
-						throw CException(Erreur_NbArcs, sExceptionMessage);
-					}
-					//EntrÈe : le nombre d'arcs dÈfinit est diffÈrent que celui trouvÈ
-					else if (iNbInit == 2 && (iCurrentResIndex /= 2) != iNbArcs) {
-						sprintf_s(sExceptionMessage, 255, "CGraphe::CGraphe(const char *cpContenu) : %d arcs attendus %d arcs obtenus\n", iNbArcs, iCurrentResIndex);
-						throw CException(Erreur_NbArcs, sExceptionMessage);
-					}
+			//Entr√©e : Le fichier √† pu √™tre ouvert
+			//Sinon  : On renvoie une erreur
+			if (FILfichier.is_open())
+			{
+				while (std::getline(FILfichier, sBuffer)) {
+					//On concat√®ne la ligne courrante avec les lignes pr√©c√©dentes
+					//On ajoute on retour √† la ligne si la ligne courrante n'est pas la derni√®re du fichier
+					sFileContent += sBuffer + (!FILfichier.eof() ? "\n" : "");
 				}
 
-				break;
-
-			default:
-				switch (uiRegexIndex) {
-
-				case 1:
-					//printf("Le nombre de sommets est de : %s\n", sRegexResult.c_str());
-					iNbSommets = atoi(sRegexResult.c_str());
-					break;
-
-				case 2:
-					//printf("Le nombre d'arcs est de : %s\n", sRegexResult.c_str());
-					iNbArcs = atoi(sRegexResult.c_str());
-
-					//EntrÈe : On a dÈfini un nombre de sommets ‡ 0 pourtant on ‡ defini des arcs
-					//		=> On renvoie une erreur
-					if (iNbSommets == 0 && iNbArcs != 0) {
-						throw CException(Erreur_NbArcs, "CGraphe::CGraphe(const char *cpContenu) : Le nombre de sommets a ÈtÈ dÈfini sur 0, le nombre d'arcs devrait l'Ítre aussi.\n");
-					}
-
-
-					//EntrÈe : On a dÈpasser le nombre de possibilitÈ totale de laision entre les sommets
-					//		=> On renvoie une erreur
-					if ( iNbArcs > std::pow(iNbSommets,2) - iNbSommets) {
-						sprintf_s(sExceptionMessage, 255, "CGraphe::CGraphe(const char *cpContenu) : Top d'arcs a initialiser, %d maximum .\n", (int)(std::pow(iNbSommets, 2) - iNbSommets));
-						throw CException(Erreur_NbArcs, sExceptionMessage);
-					}
-
-					break;
-				}
-				break;
 			}
+			else {
+				FILfichier.close();
+				sprintf_s(sExceptionMessage, 255, "CGraphe::CGraphe(const char *cpChemin) : Impossible d'ouvrir le fichier \"%s\"\n", cpContenu);
+				throw CException(CGRAPHE_Ouverture_Fichier_Impossible, sExceptionMessage);
+			}
+
+			FILfichier.close();
+			cpContentToUse = _strdup(sFileContent.c_str());
+		}
+		else {
+			cpContentToUse = _strdup(cpContenu);
+		}
+
+		//Initialisation par d√©faut
+		pSOMGPHListeSommet = NULL;
+		uGPHTailleLSom = 0;
+
+		char sExceptionMessage[] = "";
+
+		std::string sRegexResult;
+		std::regex rRegex("NBSommets[ \\t]*=[ \\t]*([0-9]+)[ \\t]*\\nNBArcs[ \\t]*=[ \\t]*([0-9]+)[ \\t]*\\nSommets[ \\t]*=[ \\t]*(\\[)[ \\t]*\\n((?:Numero[ \\t]*=[ \\t]*[0-9]+\\n)*)\\][ \\t]*\\nArcs[ \\t]*=[ \\t]*(\\[)[ \\t]*\\n((?:Debut[ \\t]*=[ \\t]*[0-9]+[ \\t]*,[ \\t]*Fin[ \\t]*=[ \\t]*([0-9]+)[ \\t]*\\n)*)\\]\\s*");
+		std::cmatch cmMatchGlobal, cmMatchNumeric;
+
+		int iNbSommets, iNbArcs;
+		int iNbInit = 0;
+
+		std::regex rNumericRegex("[0-9]+");
+
+		//Entr√©e : Le fichier correspond √† l'expression r√©guli√®re
+		//Sinon  : On renvoie une erreur
+		if (std::regex_match(cpContentToUse, cmMatchGlobal, rRegex)) {
+
+			//On parcourt l'ensemble des r√©sultats des groupes de capture du fichier (cf. la variable regex rRegex)
+			for (unsigned uiRegexIndex = 1; uiRegexIndex < cmMatchGlobal.size(); ++uiRegexIndex) {
+				sRegexResult = cmMatchGlobal[uiRegexIndex].str();
+
+				//On v√©rifie si la ligne suivante est une initialisation du contenu
+				switch (sRegexResult[sRegexResult.length() - 1]) {
+				case '[':
+
+					++iNbInit;
+
+					//Entr√©e : Il y a bien un r√©sultat de la recherche regex apr√®s celui courrant
+					//V√©rification normalement inutile car regex_match a renvoy√© true
+					if (++uiRegexIndex < cmMatchGlobal.size()) {
+
+						sRegexResult = cmMatchGlobal[uiRegexIndex].str();
+
+						int iCurrentResIndex = 0, iResValue, iTempInitValue;
+
+						//On parcourt la zone d'initialisation
+						while (std::regex_search(sRegexResult.c_str(), cmMatchNumeric, rNumericRegex)) {
+
+							//On r√©cup√®re la valeur du sommet/de l'arc
+							iResValue = atoi(cmMatchNumeric.str().c_str());
+
+							//Entr√©e : On est dans la partie d'initialisation des sommets
+							//		=> On ajoute le sommet
+							if (iNbInit == 1) {
+								try {
+									this->GPHAjouterSommet(iResValue);
+								}
+								catch (CException EXCELevee) {
+									std::cerr << EXCELevee.EXCGetMessage();
+								}
+							}
+							//Entr√©e : On est dans la partie d'initialisation des arcs
+							else {
+								//Entr√©e : On est sur un idex pair (c√†d on est sur un d√©but)
+								//		=> On stock la valeur pour la r√©utiliser quand on sera sur une fin de l'arc
+								if (iCurrentResIndex % 2 == 0) {
+									iTempInitValue = iResValue;
+								}
+								else {
+									try {
+										//On relie les deux sommets
+										this->GPHLierSommets(iTempInitValue, iResValue);
+									}
+									catch (CException EXCELevee) {
+										std::cerr << EXCELevee.EXCGetMessage();
+									}
+								}
+							}
+
+							//On passe √† la suite de la cha√Æne
+							sRegexResult = cmMatchNumeric.suffix();
+							++iCurrentResIndex;
+						}
+
+						//Entr√©e : le nombre de sommets d√©finit est diff√©rent que celui trouv√©
+						//		=> on renvoie une erreur
+						if (iNbInit == 1 && iCurrentResIndex != iNbSommets) {
+							sprintf_s(sExceptionMessage, 255, "CGraphe::CGraphe(const char *cpContenu, bool bContenuEstChemin) : %d sommets attendus %d sommets obtenus\n", iNbSommets, iCurrentResIndex);
+							throw CException(CGRAPHE_Erreur_NbArcs, sExceptionMessage);
+						}
+
+						//Entr√©e : le nombre d'arcs d√©finit est diff√©rent que celui trouv√©
+						//		=> On renvoie une erreur
+						else if (iNbInit == 2 && (iCurrentResIndex /= 2) != iNbArcs) {
+							sprintf_s(sExceptionMessage, 255, "CGraphe::CGraphe(const char *cpContenu, bool bContenuEstChemin) : %d arcs attendus %d arcs obtenus\n", iNbArcs, iCurrentResIndex);
+							throw CException(CGRAPHE_Erreur_NbArcs, sExceptionMessage);
+						}
+					}
+
+					break;
+
+				default:
+					switch (uiRegexIndex) {
+
+					case 1:
+						//printf("Le nombre de sommets est de : %s\n", sRegexResult.c_str());
+						iNbSommets = atoi(sRegexResult.c_str());
+						break;
+
+					case 2:
+						//printf("Le nombre d'arcs est de : %s\n", sRegexResult.c_str());
+						iNbArcs = atoi(sRegexResult.c_str());
+
+						//Entr√©e : On a d√©fini un nombre de sommets √† 0 pourtant on √† defini des arcs
+						//		=> On renvoie une erreur
+						if (iNbSommets == 0 && iNbArcs != 0) {
+							throw CException(CGRAPHE_Erreur_NbArcs, "CGraphe::CGraphe(const char *cpContenu, bool bContenuEstChemin) : Le nombre de sommets a √©t√© d√©fini sur 0, le nombre d'arcs devrait l'√™tre aussi.\n");
+						}
+
+
+						//Entr√©e : On a d√©passer le nombre de possibilit√© totale de laision entre les sommets
+						//		=> On renvoie une erreur
+						if (iNbArcs > (iNbSommets * iNbSommets - iNbSommets)) {
+							sprintf_s(sExceptionMessage, 255, "CGraphe::CGraphe(const char *cpContenu, bool bContenuEstChemin) : Top d'arcs a initialiser, %d maximum .\n", (iNbSommets * iNbSommets - iNbSommets));
+							throw CException(CGRAPHE_Erreur_NbArcs, sExceptionMessage);
+						}
+
+						break;
+					}
+					break;
+				}
+			}
+			free(cpContentToUse);
+		}
+		else {
+			throw CException(CGRAPHE_Erreur_Syntaxe, "CGraphe::CGraphe(const char *cpContenu, bool bContenuEstChemin) : La cha√Æne de caract√®res ne correspond pas au format attendu\n");
 		}
 	}
 	else {
-		throw CException(Erreur_Syntaxe, "CGraphe::CGraphe(const char *cpContenu) : La chaÓne de caractËres ne correspond pas au format attendu\n");
+	throw CException(CGRAPHE_Erreur_Syntaxe, "CGraphe::CGraphe(const char *cpContenu, bool bContenuEstChemin) : La cha√Æne de caract√®res est nulle\n");
 	}
-
 }
 
 
 /*!
- * Destructeur par dÈfaut
+ * Destructeur par d√©faut
  *
  */
 CGraphe::~CGraphe(void)
 {
-	delete[] pSOMGPHListeSommet;
+	if(pSOMGPHListeSommet) delete[] pSOMGPHListeSommet;
 }
 
 
@@ -175,13 +218,13 @@ CGraphe::~CGraphe(void)
  * Cherche si le sommet existe
  *
  * \param uId Un numero de sommet
- * \return L'index du sommet cherchÈ
+ * \return L'index du sommet cherch√©
  */
 int CGraphe::GPHChercherSommet(unsigned int uId)
 {
 	unsigned int uBoucle;
 	for (uBoucle = 0; uBoucle < uGPHTailleLSom; uBoucle++) {
-		if (pSOMGPHListeSommet[uBoucle].SOMGetId() == uId) {
+		if (pSOMGPHListeSommet[uBoucle]->SOMGetId() == uId) {
 			return(uBoucle);
 		}
 	}
@@ -191,37 +234,33 @@ int CGraphe::GPHChercherSommet(unsigned int uId)
 
 /*!
  * Ajoute un nouveau sommet dans le graphe.
- * OU renvoie une erreur si le sommet existe dÈj‡
+ * OU renvoie une erreur si le sommet existe d√©j√†
  *
- * \param uNumero Le numÈro du nouveau sommet charchÈ.
- * \return L'index du sommet crÈÈ
+ * \param uNumero Le num√©ro du nouveau sommet charch√©.
+ * \return L'index du sommet cr√©√©
  */
 unsigned int CGraphe::GPHAjouterSommet(unsigned int uNumero)
 {
 
-	//EntrÈe : Le sommet existe dÈj‡ dans le graphe
+	//Entr√©e : Le sommet existe d√©j√† dans le graphe
 	//		=> On renvoie une erreurs
 	if (GPHChercherSommet(uNumero) != -1) {
 		char sExceptionMessage[] = "";
 		sprintf_s(sExceptionMessage, 255, "CGraphe::GPHAjouterSommet(unsigned int uNumero) : Le sommet numero %d existe deja.\n", uNumero);
-		throw CException(Sommet_Existant, sExceptionMessage);
+		throw CException(CGRAPHE_Sommet_Existant, sExceptionMessage);
 	}
 
-	CSommet SOMNouveauSommet(uNumero);
 
-	//Nouveau tableau ‡ assigner ‡ pSOMGPHListeSommet
-	CSommet * pSOMNouvelleListe = new CSommet[uGPHTailleLSom + 1];
-	unsigned int uBoucle;
+	//Nouveau tableau √† assigner √† pSOMGPHListeSommet
+	CSommet ** pSOMNouvelleListe = (CSommet **) realloc(pSOMGPHListeSommet, sizeof(CSommet *)*(uGPHTailleLSom + 1));
 
-	//On copier la valeur de tous les sommets existants
-	for (uBoucle = 0; uBoucle < uGPHTailleLSom; uBoucle++) {
-		pSOMNouvelleListe[uBoucle] = pSOMGPHListeSommet[uBoucle];
+	//Erreur si allocation √©chou√©e
+	if (pSOMNouvelleListe == NULL) {
+		throw(CException(CGRAPHE_Alloc_Echouee, "CGraphe::GPHAjouterSommet(unsigned int uNumero) : Erreur d'allocation/r√©allocation.\n"));
 	}
 
 	//On ajoute le nouveau sommet
-	pSOMNouvelleListe[uGPHTailleLSom] = SOMNouveauSommet;
-
-	delete[] pSOMGPHListeSommet;
+	pSOMNouvelleListe[uGPHTailleLSom] = new CSommet(uNumero);
 	pSOMGPHListeSommet = pSOMNouvelleListe;
 
 	uGPHTailleLSom++;
@@ -234,34 +273,49 @@ unsigned int CGraphe::GPHAjouterSommet(unsigned int uNumero)
  * Supprime le sommet de numero uId du graphe ainsi que tout ses liens avec les autres sommets.
  * OU renvoie une erreur si le sommet n'existe pas
  *
- * \param uId NumÈro du sommet ‡ supprimer
+ * \param uId Num√©ro du sommet √† supprimer
  */
 void CGraphe::GPHSupprimerSommet(unsigned int uId)
 {
 	int iPos = GPHChercherSommet(uId);
 
-	//EntrÈe : le sommet cherchÈ existe
+	//Entr√©e : le sommet cherch√© existe
 	if (iPos != -1) {
 
 		//On supprime tous les arcs (arrivants et partant) du sommet
 		for (unsigned uBoucle = 0; uBoucle < uGPHTailleLSom; uBoucle++) {
-			GPHDelierSommets(uId, uBoucle);
-			GPHDelierSommets(uBoucle, uId);
+			try {
+				GPHDelierSommets(uId, uBoucle);
+				GPHDelierSommets(uBoucle, uId);
+			}
+			catch (CException EXCELevee) {
+				std::cerr << EXCELevee.EXCGetMessage();
+			}
 		}
 
-		CSommet * pSOMNouvelleListe = new CSommet[uGPHTailleLSom - 1];
+		CSommet ** pSOMNouvelleListe = (CSommet **) malloc(sizeof(CSommet *)*(uGPHTailleLSom - 1));
+
+
+		//Erreur si allocation √©chou√©e
+		if (pSOMNouvelleListe == NULL) {
+			throw(CException(CGRAPHE_Alloc_Echouee, "CGraphe::GPHSupprimerSommet(unsigned int uId) : Erreur d'allocation.\n"));
+		}
 
 		//On copie tous les autres sommets dans un nouveau tableau
 		for (unsigned uBoucle = 0, uCounter = 0; uBoucle < uGPHTailleLSom; uBoucle++) {
 
-			//Ajoute le sommet dans la nouvelle liste s'il ce n'est pas celui ‡ supprimer
-			if (pSOMGPHListeSommet[uBoucle].SOMGetId() != uId) {
+			//Ajoute le sommet dans la nouvelle liste s'il ce n'est pas celui √† supprimer
+			if (pSOMGPHListeSommet[uBoucle]->SOMGetId() != uId) {
 				pSOMNouvelleListe[uCounter] = pSOMGPHListeSommet[uBoucle];
 				uCounter++;
 			}
+			else {
+				delete pSOMNouvelleListe[uCounter];
+			}
 		}
 
-		delete[] pSOMGPHListeSommet;
+		//On supprime l'ancien tableau et on lui assigne le nouveau
+		free(pSOMGPHListeSommet);
 		pSOMGPHListeSommet = pSOMNouvelleListe;
 		
 		uGPHTailleLSom--;
@@ -270,18 +324,18 @@ void CGraphe::GPHSupprimerSommet(unsigned int uId)
 
 
 /*!
- * VÈrifie si deux sommets sont liÈs dans le sens sommet n∞ uSommetDep vers sommet n∞ uSommetArr
+ * V√©rifie si deux sommets sont li√©s dans le sens sommet n¬∞ uSommetDep vers sommet n¬∞ uSommetArr
  *
- * \param uSommetDep Le sommet de dÈpart
- * \param uSommetArr Le sommet d'arrivÈ
- * \return true si les deux sommets sons liÈs dans le sens sommet n∞ uSommetDep vers sommet n∞ uSommetArr false sinon
+ * \param uSommetDep Le sommet de d√©part
+ * \param uSommetArr Le sommet d'arriv√©
+ * \return true si les deux sommets sons li√©s dans le sens sommet n¬∞ uSommetDep vers sommet n¬∞ uSommetArr false sinon
  */
 bool CGraphe::GPHLiees(unsigned int uSommetDep, unsigned int uSommetArr)
 {
-	//EntrÈe : les deux sommets existent dans le graphe
+	//Entr√©e : les deux sommets existent dans le graphe
 	if (GPHChercherSommet(uSommetDep) != -1 && GPHChercherSommet(uSommetArr) != -1) {
-		//On renvoie true s'ils sont liÈs, false sinon
-		return(pSOMGPHListeSommet[GPHChercherSommet(uSommetDep)].SOMLies(pSOMGPHListeSommet[GPHChercherSommet(uSommetArr)]));
+		//On renvoie true s'ils sont li√©s, false sinon
+		return(pSOMGPHListeSommet[GPHChercherSommet(uSommetDep)]->SOMLies(*pSOMGPHListeSommet[GPHChercherSommet(uSommetArr)]));
 	}
 
 	return false;
@@ -289,67 +343,72 @@ bool CGraphe::GPHLiees(unsigned int uSommetDep, unsigned int uSommetArr)
 
 
 /*!
- * Lie deux sommets du graphe (crÈÈ l'arc Sommet de n∞ uIdDepart vers Sommet de n∞ uIdArrivee).
- * OU renvoie une erreur s'il existe dÈj‡ un arc dirigÈ entre les deux sommets (c‡d de Sommet de n∞ uIdDepart vers Sommet de n∞ uIdArrivee)
+ * Lie deux sommets du graphe (cr√©√© l'arc Sommet de n¬∞ uIdDepart vers Sommet de n¬∞ uIdArrivee).
+ * OU renvoie une erreur s'il existe d√©j√† un arc dirig√© entre les deux sommets (c√†d de Sommet de n¬∞ uIdDepart vers Sommet de n¬∞ uIdArrivee)
  *
- * \param uIdDepart Le numÈro du sommet de dÈpart
- * \param uIdArrivee Le numÈro du sommet d'arrivÈ
+ * \param uIdDepart Le num√©ro du sommet de d√©part
+ * \param uIdArrivee Le num√©ro du sommet d'arriv√©
  */
 void CGraphe::GPHLierSommets(unsigned int uIdDepart, unsigned int uIdArrivee)
 {
 	char sExceptionMessage[] = "";
 
-	//EntrÈe : Pas de tentative de relier un sommet avec lui-mÍme
+	//Entr√©e : Pas de tentative de relier un sommet avec lui-m√™me
 	//Sinon  : On renvoie une erreur
 	if (uIdDepart != uIdArrivee) {
 		int iPosDep;
 		int iPosArr = GPHChercherSommet(uIdArrivee);
 
-		//EntrÈe : Le sommet d'arrivÈe existe dans le graphe
+		//Entr√©e : Le sommet d'arriv√©e existe dans le graphe
 		//Sinon  : On renvoie une erreur
 		if (iPosArr != -1)
 		{
 			iPosDep = GPHChercherSommet(uIdDepart);
 
-			//Le sommet de dÈpart existe dans le graphe
+			//Le sommet de d√©part existe dans le graphe
 			//Sinon  : On renvoie une erreur
 			if (iPosDep != -1) {
 
-				//EntrÈe : Il existe dÈj‡ un arc dans le sens Sommet de n∞ uIdDepart vers Sommet de n∞ uIdArrivee
+				//Entr√©e : Il existe d√©j√† un arc dans le sens Sommet de n¬∞ uIdDepart vers Sommet de n¬∞ uIdArrivee
 				//		=> On renvoie une erreur
-				if (pSOMGPHListeSommet[iPosDep].SOMChercherArcSortant(uIdArrivee) != -1) {
+				if (pSOMGPHListeSommet[iPosDep]->SOMChercherArcSortant(uIdArrivee) != -1) {
 					sprintf_s(sExceptionMessage, 255, "CGraphe::GPHLierSommets(unsigned int uIdDepart, unsigned int uIdArrivee) : L'arc sortant depuis %d vers %d existe deja.\n", uIdDepart, uIdArrivee);
-					throw CException(Arc_Existant, sExceptionMessage);
+					throw CException(CGRAPHE_Arc_Existant, sExceptionMessage);
 				}
 
-				//On crÈÈ on arc de dÈpart dans le sommet de dÈpart et un d'arrivÈ dans le sommet d'arrivÈ
-				pSOMGPHListeSommet[iPosDep].SOMAjouterArcSortant(uIdArrivee);
-				pSOMGPHListeSommet[iPosArr].SOMAjouterArcArrivant(uIdDepart);
+				try {
+					//On cr√©√© on arc de d√©part dans le sommet de d√©part et un d'arriv√© dans le sommet d'arriv√©
+					pSOMGPHListeSommet[iPosDep]->SOMAjouterArcSortant(uIdArrivee);
+					pSOMGPHListeSommet[iPosArr]->SOMAjouterArcArrivant(uIdDepart);
+				}
+				catch (CException EXCELevee) {
+					std::cerr << EXCELevee.EXCGetMessage();
+				}
 			}
 			else {
 				sprintf_s(sExceptionMessage, 255, "CGraphe::GPHLierSommets(unsigned int uIdDepart, unsigned int uIdArrivee) : Le sommet de depart %d est inconnu.\n", uIdDepart);
-				throw CException(Sommet_Inconnu, sExceptionMessage);
+				throw CException(CGRAPHE_Sommet_Inconnu, sExceptionMessage);
 			}
 		}
 		else
 		{
 			sprintf_s(sExceptionMessage, 255, "CGraphe::GPHLierSommets(unsigned int uIdDepart, unsigned int uIdArrivee) : Le sommet d'arrivee %d est inconnu.\n", uIdArrivee);
-			throw CException(Sommet_Inconnu, sExceptionMessage);
+			throw CException(CGRAPHE_Sommet_Inconnu, sExceptionMessage);
 		}
 	}
 	else {
 		sprintf_s(sExceptionMessage, 255, "CGraphe::GPHLierSommets(unsigned int uIdDepart, unsigned int uIdArrivee) : Tentative de relier le sommet %d avec lui-meme.\n", uIdArrivee);
-		throw CException(Auto_Referencement, sExceptionMessage);
+		throw CException(CGRAPHE_Auto_Referencement, sExceptionMessage);
 	}
 }
 
 
 /*!
- * DÈlie deux sommets du graphe (supprime l'arc Sommet de n∞ uIdDepart vers Sommet de n∞ uIdArrivee).
+ * D√©lie deux sommets du graphe (supprime l'arc Sommet de n¬∞ uIdDepart vers Sommet de n¬∞ uIdArrivee).
  * OU renvoie une erreur si l'arc n'existe pas
  *
- * \param uIdDepart Le numÈro du sommet de dÈpart
- * \param uIdArrivee Le numÈro du sommet d'arrivÈ
+ * \param uIdDepart Le num√©ro du sommet de d√©part
+ * \param uIdArrivee Le num√©ro du sommet d'arriv√©
  */
 void CGraphe::GPHDelierSommets(unsigned int uIdDepart, unsigned int uIdArrivee)
 {
@@ -359,123 +418,138 @@ void CGraphe::GPHDelierSommets(unsigned int uIdDepart, unsigned int uIdArrivee)
 
 	char sExceptionMessage[] = "";
 
-	//EntrÈe : le sommet d'arrivÈ existe dans le graphe
+	//Entr√©e : le sommet d'arriv√© existe dans le graphe
 	//Sinon  : On renvoie une erreur
 	if (iPosArr != -1){
 
 		iPosDep = GPHChercherSommet(uIdDepart);
 
-		//EntrÈe : le sommet de dÈpart existe dans le graphe
+		//Entr√©e : le sommet de d√©part existe dans le graphe
 		//Sinon  : On renvoie une erreur
 		if (iPosDep != -1) {
 
-			//EntrÈe : Les sommets sont bien liÈs par un arc dans le sens Sommet de n∞ uIdDepart vers Sommet de n∞ uIdArrivee
-			if (pSOMGPHListeSommet[iPosDep].SOMLies(pSOMGPHListeSommet[iPosArr]) == true) {
+			//Entr√©e : Les sommets sont bien li√©s par un arc dans le sens Sommet de n¬∞ uIdDepart vers Sommet de n¬∞ uIdArrivee
+			if (pSOMGPHListeSommet[iPosDep]->SOMLies(*pSOMGPHListeSommet[iPosArr]) == true) {
 				
-				//On crÈÈ on arc de dÈpart dans le sommet de dÈpart et un d'arrivÈ dans le sommet d'arrivÈ
-				pSOMGPHListeSommet[iPosDep].SOMRetirerArcSortant(uIdArrivee);
-				pSOMGPHListeSommet[iPosArr].SOMRetirerArcArrivant(uIdDepart);
+				try {
+					//On cr√©√© on arc de d√©part dans le sommet de d√©part et un d'arriv√© dans le sommet d'arriv√©
+					pSOMGPHListeSommet[iPosDep]->SOMRetirerArcSortant(uIdArrivee);
+					pSOMGPHListeSommet[iPosArr]->SOMRetirerArcArrivant(uIdDepart);
+				}
+				catch (CException EXCELevee) {
+					std::cerr << EXCELevee.EXCGetMessage();
+				}
 			}
 		}
 		else {
 			sprintf_s(sExceptionMessage, 255, "CGraphe::GPHDelierSommets(unsigned int uIdDepart, unsigned int uIdArrivee) : Le sommet de depart %d est inconnu.\n", uIdDepart);
-			throw CException(Sommet_Inconnu, sExceptionMessage);
+			throw CException(CGRAPHE_Sommet_Inconnu, sExceptionMessage);
 		}
 	}
 	else
 	{
 		sprintf_s(sExceptionMessage, 255, "CGraphe::GPHDelierSommets(unsigned int uIdDepart, unsigned int uIdArrivee) : Le sommet d'arrivee %d est inconnu.\n", uIdArrivee);
-		throw CException(Sommet_Inconnu, sExceptionMessage);
+		throw CException(CGRAPHE_Sommet_Inconnu, sExceptionMessage);
 	}
 }
 
 
 /*!
- * Renvoie les numÈros des arcs sortants d'un sommet.
+ * Renvoie les num√©ros des arcs sortants d'un sommet.
  *
  * \param uId Le numero du sommet dont on veut les arcs sortants
- * \return Un tableau d'entiers contenant les arcs sortant et en premiËre position le nombre d'ÈlÈments scannÈs.
+ * \return Un tableau d'entiers contenant les arcs sortant et en premi√®re position le nombre d'√©l√©ments scann√©s.
  */
 unsigned int * CGraphe::GPHLireArcsS(unsigned int uId)
 {
 	int iPos = GPHChercherSommet(uId);
 
-	//EntrÈe : Le sommet n'existe pas dans le graphe
+	//Entr√©e : Le sommet n'existe pas dans le graphe
 	if (iPos == -1) {
 		return nullptr;
 	}
 
-	//EntrÈe : Le sommet n'a pas d'arcs sortants
-	if (pSOMGPHListeSommet[iPos].SOMGetTailleS() == 0) {
+	//Entr√©e : Le sommet n'a pas d'arcs sortants
+	if (pSOMGPHListeSommet[iPos]->SOMGetTailleS() == 0) {
 		return nullptr;
 	}
 
 	unsigned int uBoucle;
-	unsigned int * puTableau = new unsigned int[pSOMGPHListeSommet[iPos].SOMGetTailleS() + 1];
+	unsigned int * puTableau = new unsigned int[pSOMGPHListeSommet[iPos]->SOMGetTailleS() + 1];
 	
-	//On parcourt tous les arcs sortants du sommet et on les met dans le tableau ‡ retourner
-	for (uBoucle = 1; uBoucle < pSOMGPHListeSommet[iPos].SOMGetTailleS() + 1; uBoucle++) {
-		puTableau[uBoucle] = pSOMGPHListeSommet[iPos].SOMLireListeS(uBoucle).ARCGetDestination();
+	//On parcourt tous les arcs sortants du sommet et on les met dans le tableau √† retourner
+	for (uBoucle = 1; uBoucle < pSOMGPHListeSommet[iPos]->SOMGetTailleS() + 1; uBoucle++) {
+		try {
+			puTableau[uBoucle] = pSOMGPHListeSommet[iPos]->SOMLireListeS(uBoucle)->ARCGetDestination();
+		}
+		catch (CException EXCELevee) {
+			std::cerr << EXCELevee.EXCGetMessage();
+		}
 	}
 
-	//On stock ‡ l'indice 0 le nombre d'arcs dans le tableau ‡ retourner
-	puTableau[0] = pSOMGPHListeSommet[iPos].SOMGetTailleS();
+	//On stock √† l'indice 0 le nombre d'arcs dans le tableau √† retourner
+	puTableau[0] = pSOMGPHListeSommet[iPos]->SOMGetTailleS();
 	return puTableau;
 }
 
 
 /*!
- * Renvoie les numÈros des arcs arrivants d'un sommet.
+ * Renvoie les num√©ros des arcs arrivants d'un sommet.
  *
  * \param uId Le numero du sommet dont on veut les arcs arrivants
- * \return Un tableau d'entiers contenant les arcs arrivants et en premiËre position le nombre d'ÈlÈments scannÈs.
+ * \return Un tableau d'entiers contenant les arcs arrivants et en premi√®re position le nombre d'√©l√©ments scann√©s.
  */
 unsigned int * CGraphe::GPHLireArcsA(unsigned int uId)
 {
 	int iPos = GPHChercherSommet(uId);
 
-	//EntrÈe : Le sommet n'existe pas dans le graphe
+	//Entr√©e : Le sommet n'existe pas dans le graphe
 	if (iPos == -1) {
 		return nullptr;
 	}
 
-	//EntrÈe : Le sommet n'a pas d'arcs arrivants
-	if (pSOMGPHListeSommet[iPos].SOMGetTailleA() == 0) {
+	//Entr√©e : Le sommet n'a pas d'arcs arrivants
+	if (pSOMGPHListeSommet[iPos]->SOMGetTailleA() == 0) {
 		return nullptr;
 	}
 
 	unsigned int uBoucle;
-	unsigned int * puTableau = new unsigned int[pSOMGPHListeSommet[iPos].SOMGetTailleA() + 1];
+	unsigned int * puTableau = new unsigned int[pSOMGPHListeSommet[iPos]->SOMGetTailleA() + 1];
 
-	//On parcourt tous les arcs arrivants du sommet et on les met dans le tableau ‡ retourner
-	for (uBoucle = 1; uBoucle < pSOMGPHListeSommet[iPos].SOMGetTailleA() + 1; uBoucle++) {
-		puTableau[uBoucle] = pSOMGPHListeSommet[iPos].SOMLireListeA(uBoucle).ARCGetDestination();
+	//On parcourt tous les arcs arrivants du sommet et on les met dans le tableau √† retourner
+	for (uBoucle = 1; uBoucle < pSOMGPHListeSommet[iPos]->SOMGetTailleA() + 1; uBoucle++) {
+		try {
+			puTableau[uBoucle] = pSOMGPHListeSommet[iPos]->SOMLireListeA(uBoucle)->ARCGetDestination();
+		}
+		catch (CException EXCELevee) {
+			std::cerr << EXCELevee.EXCGetMessage();
+		}
 	}
 
-	//On stock ‡ l'indice 0 le nombre d'arcs dans le tableau ‡ retourner
-	puTableau[0] = pSOMGPHListeSommet[iPos].SOMGetTailleA();
+	//On stock √† l'indice 0 le nombre d'arcs dans le tableau √† retourner
+	puTableau[0] = pSOMGPHListeSommet[iPos]->SOMGetTailleA();
 	return puTableau;
 }
 
 
 /*!
- * Affiche le sommet de numÈro uId
+ * Affiche le sommet de num√©ro uId
  *
- * \param uId Le numÈro du sommet ‡ afficher
+ * \param uId Le num√©ro du sommet √† afficher
  */
 void CGraphe::GPHAfficherSommet(unsigned int uId)
 {
 	int iPos = GPHChercherSommet(uId);
 
-	//EntrÈe : Le sommet existe dans le graphe
+	//Entr√©e : Le sommet existe dans le graphe
 	//Sinon  : On renvoie une erreur
 	if (iPos != -1) {
-		pSOMGPHListeSommet[iPos].SOMAfficherSommet();
+		pSOMGPHListeSommet[iPos]->SOMAfficherSommet();
 	}
 	else {
 		char sExceptionMessage[] = "";
-		printf_s(sExceptionMessage, 255, "Le sommet %d n'est pas dans le graphe.\n", uId);
-		throw CException(Sommet_Inconnu, sExceptionMessage);
+		sprintf_s(sExceptionMessage, 255, "Le sommet %d n'est pas dans le graphe.\n", uId);
+		throw CException(CGRAPHE_Sommet_Inconnu, sExceptionMessage);
 	}
 }
 
@@ -491,7 +565,12 @@ void CGraphe::GPHAfficherGraphe()
 
 	//On affiche tous les sommets
 	for (uBoucle = 0; uBoucle < uGPHTailleLSom; uBoucle++) {
-		pSOMGPHListeSommet[uBoucle].SOMAfficherSommet();
+		try {
+			pSOMGPHListeSommet[uBoucle]->SOMAfficherSommet();
+		}
+		catch (CException EXCELevee) {
+			std::cerr << EXCELevee.EXCGetMessage();
+		}
 	}
 	std::cout << std::endl;
 }
@@ -500,7 +579,7 @@ void CGraphe::GPHAfficherGraphe()
 /*!
  * Inverse les arcs du graphe : les arcs sortants deviennent arrivants et vice-versa
  *
- * \return Un nouvel objet CGraphe, inversÈ par rapport ‡ 'objet appelant
+ * \return Un nouvel objet CGraphe, invers√© par rapport √† 'objet appelant
  */
 CGraphe & CGraphe::GPHRenverserGraphe() {
 	CGraphe * GPHGrapheRenv = new CGraphe(*this);
@@ -508,14 +587,14 @@ CGraphe & CGraphe::GPHRenverserGraphe() {
 
 	//On inverse les arcs pour chaque sommet
 	for (uBoucle = 0; uBoucle < uGPHTailleLSom; uBoucle++) {
-		GPHGrapheRenv->pSOMGPHListeSommet[uBoucle].SOMInverser();
+		GPHGrapheRenv->pSOMGPHListeSommet[uBoucle]->SOMInverser();
 	}
 	return *GPHGrapheRenv;
 }
 
 
 /*!
- * Surcharge de l'opÈrateur =
+ * Surcharge de l'op√©rateur =
  * Copie le contenu de GPHParam dans l'objet appelant
  *
  * \param GPHParam
@@ -523,14 +602,22 @@ CGraphe & CGraphe::GPHRenverserGraphe() {
  */
 CGraphe & CGraphe::operator=(CGraphe & GPHParam)
 {
-	delete[] pSOMGPHListeSommet;
-	uGPHTailleLSom = GPHParam.uGPHTailleLSom;
-	pSOMGPHListeSommet = new CSommet[GPHParam.uGPHTailleLSom];
-	unsigned int uBoucle;
+	if (this != &GPHParam) {
+		uGPHTailleLSom = GPHParam.uGPHTailleLSom;
+		//pSOMGPHListeSommet = new CSommet[GPHParam.uGPHTailleLSom];
 
-	//On copie la liste des sommets de GPHParam
-	for (uBoucle = 0; uBoucle < uGPHTailleLSom; uBoucle++) {
-		pSOMGPHListeSommet[uBoucle] = GPHParam.pSOMGPHListeSommet[uBoucle];
+		//On alloue la liste des sommets
+		if ( ( pSOMGPHListeSommet = (CSommet **) realloc(pSOMGPHListeSommet, sizeof(CSommet *) * (GPHParam.uGPHTailleLSom) ) ) == NULL ) {
+
+			throw(CException(CGRAPHE_Alloc_Echouee, "CSommet::operator=(const CSommet & SOMParam) : Erreur d'allocation/r√©allocation.\n"));
+		}
+
+		unsigned int uBoucle;
+
+		//On copie la liste des sommets de GPHParam
+		for (uBoucle = 0; uBoucle < uGPHTailleLSom; uBoucle++) {
+			pSOMGPHListeSommet[uBoucle] = new CSommet(*GPHParam.pSOMGPHListeSommet[uBoucle]);
+		}
 	}
 
 	return *this;

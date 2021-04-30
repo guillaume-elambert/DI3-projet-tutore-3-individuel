@@ -2,7 +2,7 @@
 
 
 /*!
- * Constructeur par défaut
+ * Constructeur par dÃ©faut
  *
  */
 CSommet::CSommet(void)
@@ -18,7 +18,7 @@ CSommet::CSommet(void)
 /*!
  * Constructeur de confort
  *
- * \param uNid Le numéro du sommet
+ * \param uNid Le numÃ©ro du sommet
  */
 CSommet::CSommet(unsigned int uNid) {
 
@@ -32,47 +32,50 @@ CSommet::CSommet(unsigned int uNid) {
 
 /*!
  * Constructeur de recopie.
- * Créé d'un CSommet copie de SOMParam.
+ * CrÃ©Ã© un objet CSommet copie de SOMParam.
  *
- * \param SOMParam L'objet CSommet à copier
+ * \param SOMParam L'objet CSommet Ã  copier
  */
 CSommet::CSommet(CSommet & SOMParam)
 {
-	uSOMId = SOMParam.uSOMId;
-	uSOMTailleListeA = SOMParam.uSOMTailleListeA;
-	uSOMTailleListeS = SOMParam.uSOMTailleListeS;
-	pARCSOMListeArcsArrivants = (CArc*)malloc(sizeof(CArc)*(SOMParam.uSOMTailleListeA));
-	pARCSOMListeArcsSortants = (CArc*)malloc(sizeof(CArc)*(SOMParam.uSOMTailleListeS));
-
-	unsigned int uBoucle;
-
-	//On copie les arcs du tableau d'arrivants
-	for (uBoucle = 0; uBoucle < uSOMTailleListeA; uBoucle++) {
-		pARCSOMListeArcsArrivants[uBoucle] = SOMParam.pARCSOMListeArcsArrivants[uBoucle];
-	}
-
-	//On copie les arcs du tableau des arcs partants
-	for (uBoucle = 0; uBoucle < uSOMTailleListeS; uBoucle++) {
-		pARCSOMListeArcsSortants[uBoucle] = SOMParam.pARCSOMListeArcsSortants[uBoucle];
-	}
+	//On fait appel Ã  la surcharge de l'opÃ©rateur =
+	*this = SOMParam;
 }
 
 
 /*!
- * Destructeur par défaut
+ * Destructeur par dÃ©faut
  *
  */
 CSommet::~CSommet(void)
 {
-	free(pARCSOMListeArcsArrivants);
-	free(pARCSOMListeArcsSortants);
+	//On appel le destructeur pour tous les arcs arrivants
+	//Et on d"salloue la liste
+	if (pARCSOMListeArcsArrivants) {
+
+		for (unsigned uBoucle = 0; uBoucle < this->uSOMTailleListeA; ++uBoucle) {
+			delete pARCSOMListeArcsArrivants[uBoucle];
+		}
+
+		free(pARCSOMListeArcsArrivants);
+	}
+
+	//On fait pareil pour les arcs sortants
+	if (pARCSOMListeArcsSortants) {
+
+		for (unsigned uBoucle = 0; uBoucle < this->uSOMTailleListeS; ++uBoucle) {
+			delete pARCSOMListeArcsSortants[uBoucle];
+		}
+
+		free(pARCSOMListeArcsSortants);
+	}
 }
 
 
 /*!
  * Accesseur en lecture de uSOMId.
  *
- * \return Le numéro du sommet
+ * \return Le numÃ©ro du sommet
  */
 unsigned int CSommet::SOMGetId(void) {
 	return uSOMId;
@@ -104,22 +107,22 @@ unsigned int CSommet::SOMGetTailleS()
 /*!
  * Ajoute un arc arrivant au sommet.
  *
- * \param ARCParam L'objet CArc à ajouter à la liste des arcs arrivants
- * \pre ARCParam n'est pas déjà dans la liste des arcs arrivants.
+ * \param uDestination La destination de l'objet CArc Ã  ajouter Ã  la liste des arcs arrivants
+ * \pre Il n'existe pas d'objet CArc dans la liste des arcs arrivants ayant pour destination uDestination.
  */
 void CSommet::SOMAjouterArcArrivant(unsigned int uDestination) {
 
 	//Verification qu'il n'y ai pas de doublons
 	if (SOMChercherArcArrivant(uDestination) == -1) {
 
-		CArc * pARCNouvelleListe = (CArc*)realloc(pARCSOMListeArcsArrivants, sizeof(CArc)*(++uSOMTailleListeA));
+		CArc ** pARCNouvelleListe = (CArc **) realloc(pARCSOMListeArcsArrivants, sizeof(CArc *)*(++uSOMTailleListeA));
 
-		//Erreur si allocation échouée
+		//Erreur si allocation Ã©chouÃ©e
 		if (pARCNouvelleListe == NULL) {
-			throw(CException(Alloc_Echouee, "CSommet::SOMAjouterArcArrivant(unsigned int uDestination) : Erreur d'allocation/réallocation.\n"));
+			throw(CException(CSOMMET_Alloc_Echouee, "CSommet::SOMAjouterArcArrivant(unsigned int uDestination) : Erreur d'allocation/rÃ©allocation.\n"));
 		}
 
-		pARCNouvelleListe[uSOMTailleListeA-1] = CArc(uDestination);
+		pARCNouvelleListe[uSOMTailleListeA-1] = new CArc(uDestination);
 		pARCSOMListeArcsArrivants = pARCNouvelleListe;
 	}
 
@@ -129,29 +132,32 @@ void CSommet::SOMAjouterArcArrivant(unsigned int uDestination) {
 /*!
  * Retire un arc arrivant au sommet.
  *
- * \param ARCParam L'objet CArc à supprimer de la liste des arcs arrivants
- * \pre ARCParam est dans la liste des arcs arrivants.
+ * \param uDestination La destination de l'objet CArc Ã  supprimer de la liste des arcs arrivants
+ * \pre Il existe un objet CArc dans la liste des arcs arrivants ayant pour destination uDestination.
  */
 void CSommet::SOMRetirerArcArrivant(unsigned int uDestination) {
 
-	//Entrée : il existe bien la connexion de this vers ARCParam
+	//EntrÃ©e : il existe bien la connexion de this vers uDestination
 	if (SOMChercherArcArrivant(uDestination) != -1) {
 
-		CArc * pARCNouvelleListe = (CArc*)malloc(sizeof(CArc)*(uSOMTailleListeA - 1));
+		CArc ** pARCNouvelleListe = (CArc **) malloc(sizeof(CArc *)*(uSOMTailleListeA - 1));
 
-		//Erreur si allocation échouée
+		//Erreur si allocation Ã©chouÃ©e
 		if (pARCNouvelleListe == NULL) {
-			throw(CException(Alloc_Echouee, "CSommet::SOMRetirerArcArrivant(unsigned int uDestination) : Erreur d'allocation.\n"));
+			throw(CException(CSOMMET_Alloc_Echouee, "CSommet::SOMRetirerArcArrivant(unsigned int uDestination) : Erreur d'allocation.\n"));
 		}
 
 		//On parcourt tous les arcs
 		for (unsigned uBoucle = 0, uCounter = 0; uBoucle < uSOMTailleListeA; uBoucle++) {
 
-			//Entrée : Nous ne sommes pas sur l'arc à supprimer
+			//EntrÃ©e : Nous ne sommes pas sur l'arc Ã  supprimer
 			//		=> On copie dan l'arc dans le nouveau tableau
-			if (pARCSOMListeArcsArrivants[uBoucle].ARCGetDestination() != uDestination) {
+			if (pARCSOMListeArcsArrivants[uBoucle]->ARCGetDestination() != uDestination) {
 				pARCNouvelleListe[uCounter] = pARCSOMListeArcsArrivants[uBoucle];
 				++uCounter;
+			}
+			else {
+				delete pARCNouvelleListe[uCounter];
 			}
 		}
 
@@ -166,20 +172,21 @@ void CSommet::SOMRetirerArcArrivant(unsigned int uDestination) {
 
 
 /*!
- * Recherche l'arc arrivant ayant pour point de départ le sommet numéro uSOMIdDestination.
+ * Recherche l'arc arrivant ayant pour point de dÃ©part le sommet numÃ©ro uSOMIdDestination.
  *
- * \param uSOMIdDestination Le numéro du sommet de départ de l'arc
- * \return La position de l'arc cherché dans la liste des arcs arrivants si il y est, -1 sinon.
+ * \param uSOMIdDestination Le numÃ©ro du sommet de dÃ©part de l'arc
+ * \return La position de l'arc cherchÃ© dans la liste des arcs arrivants si il y est, -1 sinon.
  */
 int CSommet::SOMChercherArcArrivant(unsigned int uSOMIdDestination)
 {
 	unsigned int uBoucle;
 
 	//On parcourt les arcs sortants
-	//=> Si on trouve un arcs ayant pour destination uSOMIdDestination : on renvoie l'index
 	for (uBoucle = 0; uBoucle < uSOMTailleListeA; uBoucle++) {
 
-		if (pARCSOMListeArcsArrivants[uBoucle].ARCGetDestination() == uSOMIdDestination) {
+		//EntrÃ©e : On trouve un arcs ayant pour destination uSOMIdDestination
+		//		=> On renvoie l'index
+		if (pARCSOMListeArcsArrivants[uBoucle]->ARCGetDestination() == uSOMIdDestination) {
 			return uBoucle;
 		}
 	}
@@ -192,17 +199,17 @@ int CSommet::SOMChercherArcArrivant(unsigned int uSOMIdDestination)
  *
  * \param uPos La position de l'arc dans la liste pARCSOMListeArcsArrivants
  * \pre  0 <= uPos <= uSOMTailleListeA - 1
- * \return Objet CArc à la position uPos dans la liste des arcs entrants
+ * \return Objet CArc Ã  la position uPos dans la liste des arcs entrants
  */
-CArc CSommet::SOMLireListeA(unsigned int uPos)
+CArc* CSommet::SOMLireListeA(unsigned int uPos)
 {
 
-	//Entrée : uPos est un index hors limite de la liste des arcs arrivants
-	//		=> On lève une erreur
+	//EntrÃ©e : uPos est un index hors limite de la liste des arcs arrivants
+	//		=> On lÃ¨ve une erreur
 	if (uPos > uSOMTailleListeA - 1 || uPos < 0) {
 		char sExceptionMessage[] = "";
 		sprintf_s(sExceptionMessage, 255, "CSommet::SOMLireListeA(unsigned int uPos) : Impossible de lire l'arc d'arrivee %d.\n", uPos);
-		throw CException(Lecture_Impossible, sExceptionMessage);
+		throw CException(CSOMMET_Lecture_Impossible, sExceptionMessage);
 	}
 		
 	return pARCSOMListeArcsArrivants[uPos];
@@ -210,10 +217,10 @@ CArc CSommet::SOMLireListeA(unsigned int uPos)
 
 
 /*!
- * Ajoute un arc sortant.
+ * Ajoute un arc sortant au sommet.
  *
- * \param ARCParam L'objet CArc à ajouter à la liste des arcs sortants du sommet
- * \pre ARCParam n'est pas déjà dans la liste des arcs sortants.
+ * \param uDestination La destination de l'objet CArc Ã  ajouter Ã  la liste des arcs sortants
+ * \pre Il n'existe pas d'objet CArc dans la liste des arcs sortants ayant pour destination uDestination.
  */
 void CSommet::SOMAjouterArcSortant(unsigned int uDestination)
 {
@@ -222,13 +229,13 @@ void CSommet::SOMAjouterArcSortant(unsigned int uDestination)
 	if (SOMChercherArcSortant(uDestination) == -1) {
 
 
-		CArc * pARCNouvelleListe = (CArc*)realloc(pARCSOMListeArcsSortants, sizeof(CArc)*(++uSOMTailleListeS));
+		CArc ** pARCNouvelleListe = (CArc **) realloc(pARCSOMListeArcsSortants, sizeof(CArc *)*(++uSOMTailleListeS));
 
-		//Erreur si allocation échouée
+		//Erreur si allocation Ã©chouÃ©e
 		if (pARCNouvelleListe == NULL) {
-			throw(CException(Alloc_Echouee, "CSommet::SOMAjouterArcSortant(unsigned int uDestination) : Erreur d'allocation/réallocation.\n"));
+			throw(CException(CSOMMET_Alloc_Echouee, "CSommet::SOMAjouterArcSortant(unsigned int uDestination) : Erreur d'allocation/rÃ©allocation.\n"));
 		}
-		pARCNouvelleListe[uSOMTailleListeS-1] = CArc(uDestination);
+		pARCNouvelleListe[uSOMTailleListeS-1] = new CArc(uDestination);
 		pARCSOMListeArcsSortants = pARCNouvelleListe;
 
 	}
@@ -237,32 +244,35 @@ void CSommet::SOMAjouterArcSortant(unsigned int uDestination)
 
 
 /*!
- * Retire un arc sortant.
+ * Retire un arc sortant au sommet.
  *
- * \param ARCParam L'objet CArc à supprimer de la liste des arcs sortants du sommet
- * \pre ARCParam est dans la liste des arcs sortants.
+ * \param uDestination La destination de l'objet CArc Ã  supprimer de la liste des arcs sortants
+ * \pre Il existe un objet CArc dans la liste des arcs sortants ayant pour destination uDestination.
  */
 void CSommet::SOMRetirerArcSortant(unsigned int uDestination)
 {
-	//Entrée : il existe bien la connexion de this vers ARCParam
+	//EntrÃ©e : il existe bien la connexion de this vers uDestination
 	if (SOMChercherArcSortant(uDestination) != -1) {
 		
 
-		CArc * pARCNouvelleListe = (CArc*)malloc(sizeof(CArc)*(uSOMTailleListeS - 1));
+		CArc ** pARCNouvelleListe = (CArc **) malloc(sizeof(CArc *)*(uSOMTailleListeS - 1));
 
-		//Erreur si allocation échouée
+		//Erreur si allocation Ã©chouÃ©e
 		if (pARCNouvelleListe == NULL) {
-			throw(CException(Alloc_Echouee, "CSommet::SOMRetirerArcSortant(unsigned int uDestination) : Erreur d'allocation.\n"));
+			throw(CException(CSOMMET_Alloc_Echouee, "CSommet::SOMRetirerArcSortant(unsigned int uDestination) : Erreur d'allocation.\n"));
 		}
 
 		//On parcourt tous les arcs
 		for (unsigned uBoucle = 0, uCounter = 0; uBoucle < uSOMTailleListeS; uBoucle++) {
 
-			//Entrée : Nous ne sommes pas sur l'arc à supprimer
+			//EntrÃ©e : Nous ne sommes pas sur l'arc Ã  supprimer
 			//		=> On copie dan l'arc dans le nouveau tableau
-			if (pARCSOMListeArcsSortants[uBoucle].ARCGetDestination() != uDestination) {
+			if (pARCSOMListeArcsSortants[uBoucle]->ARCGetDestination() != uDestination) {
 				pARCNouvelleListe[uCounter] = pARCSOMListeArcsSortants[uBoucle];
 				++uCounter;
+			}
+			else {
+				delete pARCNouvelleListe[uCounter];
 			}
 		}
 
@@ -276,10 +286,10 @@ void CSommet::SOMRetirerArcSortant(unsigned int uDestination)
 
 
 /*!
- * Recherche l'arc partant ayant pour point d'arrivé le sommet numéro uSOMIdDestination.
+ * Recherche l'arc partant ayant pour point d'arrivÃ© le sommet numÃ©ro uSOMIdDestination.
  *
- * \param uSOMIdDestination Le numéro du sommet d'arrivé de l'arc
- * \return La position de l'arc cherché dans la liste des arcs sortants si il y est, -1 sinon.
+ * \param uSOMIdDestination Le numÃ©ro du sommet d'arrivÃ© de l'arc
+ * \return La position de l'arc cherchÃ© dans la liste des arcs sortants si il y est, -1 sinon.
  */
 int CSommet::SOMChercherArcSortant(unsigned int uSOMIdDestination)
 {
@@ -288,7 +298,7 @@ int CSommet::SOMChercherArcSortant(unsigned int uSOMIdDestination)
 	//On parcourt les arcs sortants
 	//=> Si on trouve un arcs ayant pour destination uSOMIdDestination : on renvoie l'index
 	for (uBoucle = 0; uBoucle < uSOMTailleListeS; uBoucle++) {
-		if (pARCSOMListeArcsSortants[uBoucle].ARCGetDestination() == uSOMIdDestination) {
+		if (pARCSOMListeArcsSortants[uBoucle]->ARCGetDestination() == uSOMIdDestination) {
 			return uBoucle;
 		}
 	}
@@ -301,16 +311,16 @@ int CSommet::SOMChercherArcSortant(unsigned int uSOMIdDestination)
  *
  * \param uPos La position de l'arc dans la liste pARCSOMListeArcsSortants
  * \pre  0 <= uPos <= uSOMTailleListeS - 1
- * \return Objet CArc à la position uPos dans la liste des arcs sortants
+ * \return Objet CArc Ã  la position uPos dans la liste des arcs sortants
  */
-CArc CSommet::SOMLireListeS(unsigned int uPos)
+CArc* CSommet::SOMLireListeS(unsigned int uPos)
 {
-	//Entrée : uPos est un index hors limite de la liste des arcs sortants
-	//		=> On lève une erreur
+	//EntrÃ©e : uPos est un index hors limite de la liste des arcs sortants
+	//		=> On lÃ¨ve une erreur
 	if (uPos > uSOMTailleListeS - 1 || uPos < 0) {
 		char sExceptionMessage[] = "";
 		sprintf_s(sExceptionMessage, 255, "CSommet::SOMLireListeS(unsigned int uPos) : Impossible de lire l'arc de sortie %d.\n", uPos);
-		throw CException(Lecture_Impossible, sExceptionMessage);
+		throw CException(CSOMMET_Lecture_Impossible, sExceptionMessage);
 	}
 
 	return pARCSOMListeArcsSortants[uPos];
@@ -318,9 +328,9 @@ CArc CSommet::SOMLireListeS(unsigned int uPos)
 
 
 /*!
- * Teste si deux sommets sont liés dans le sens *this -> SOMParam
+ * Teste si deux sommets sont liÃ©s dans le sens *this -> SOMParam
  *
- * \param SOMParam L'objet CSommet dont il faut vérifier la connexion avec this
+ * \param SOMParam L'objet CSommet dont il faut vÃ©rifier la connexion avec this
  * \return true s'il existe un arc allant de cet objet vers SOMParam, false sinon.
  */
 bool CSommet::SOMLies(CSommet & SOMParam)
@@ -328,25 +338,25 @@ bool CSommet::SOMLies(CSommet & SOMParam)
 	unsigned int uBoucle;
 	unsigned int uValeurTeste = 0;
 
-	//On parcourt les arcs arrivants à SOMParam tant qu'on en a pas trouvé provenant de this
+	//On parcourt les arcs arrivants Ã  SOMParam tant qu'on en a pas trouvÃ© provenant de this
 	for (uBoucle = 0; uBoucle < SOMParam.uSOMTailleListeA && uValeurTeste == 0; uBoucle++) {
 		
-		//Entrée : on à trouvé un arc de this ayant pour destination SOMParam
-		//		=> on incrémente la varable qui sert à vérifier qu'on à trouvé
-		if (SOMParam.pARCSOMListeArcsArrivants[uBoucle].ARCGetDestination() == SOMGetId()) {
+		//EntrÃ©e : on Ã  trouvÃ© un arc de this ayant pour destination SOMParam
+		//		=> on incrÃ©mente la varable qui sert Ã  vÃ©rifier qu'on Ã  trouvÃ©
+		if (SOMParam.pARCSOMListeArcsArrivants[uBoucle]->ARCGetDestination() == SOMGetId()) {
 			uValeurTeste++;
 		}
 	}
 
-	//Si on à trouvé un résultat dans la boucle précédente :
-	//On parcourt les arcs sortants des this tant qu'on en a pas trouvé ayant pour destination SOMParam
+	//Si on Ã  trouvÃ© un rÃ©sultat dans la boucle prÃ©cÃ©dente :
+	//On parcourt les arcs sortants des this tant qu'on en a pas trouvÃ© ayant pour destination SOMParam
 	for (uBoucle = 0; uBoucle < uSOMTailleListeS && uValeurTeste == 1; uBoucle++) {
-		if (pARCSOMListeArcsSortants[uBoucle].ARCGetDestination() == SOMParam.SOMGetId()) {
+		if (pARCSOMListeArcsSortants[uBoucle]->ARCGetDestination() == SOMParam.SOMGetId()) {
 			uValeurTeste++;
 		}
 	}
 	
-	//Entrée : this contient un arc sortant vers SOMParam
+	//EntrÃ©e : this contient un arc sortant vers SOMParam
 	//		ET SOMParam contient un arcs entrant en provenance de this
 	if (uValeurTeste == 2) {
 		return true;
@@ -364,7 +374,7 @@ bool CSommet::SOMLies(CSommet & SOMParam)
 void CSommet::SOMInverser() {
 	
 	//On copie le pointeur sur la liste des arivants
-	CArc *ARCTmp = this->pARCSOMListeArcsArrivants;
+	CArc **ARCTmp = this->pARCSOMListeArcsArrivants;
 	//On copie la taille de la liste des arivants
 	unsigned uiNbArrivants = this->uSOMTailleListeA;
 
@@ -389,24 +399,24 @@ void CSommet::SOMAfficherSommet() {
 	
 	std::cout << "La liste des arcs arrivants est :" << std::endl;
 
-	//On parcourt les arcs arrivants et on les affiche (retour à la ligne tous les 3 affichés)
+	//On parcourt les arcs arrivants et on les affiche (retour Ã  la ligne tous les 3 affichÃ©s)
 	for (uBoucle = 0; uBoucle < uSOMTailleListeA; uBoucle++) {
-		std::cout << "\t" << pARCSOMListeArcsArrivants[uBoucle].ARCGetDestination() << ((uBoucle + 1) % 3 == 0 ? "\n" : "");
+		std::cout << "\t" << pARCSOMListeArcsArrivants[uBoucle]->ARCGetDestination() << ((uBoucle + 1) % 3 == 0 ? "\n" : "");
 	}
 
-	//On évite 2 retours à la lignes successifs
+	//On Ã©vite 2 retours Ã  la lignes successifs
 	if (uBoucle % 3 != 0){
 		std::cout << std::endl;
 	}
 	
 	std::cout << "La liste des arcs sortants est :" << std::endl;
 
-	//On parcourt les arcs sortants et on les affiche (retour à la ligne tous les 3 affichés)
+	//On parcourt les arcs sortants et on les affiche (retour Ã  la ligne tous les 3 affichÃ©s)
 	for (uBoucle = 0; uBoucle < uSOMTailleListeS; uBoucle++) {
-		std::cout << "\t" << pARCSOMListeArcsSortants[uBoucle].ARCGetDestination() << ((uBoucle + 1) % 3 == 0 ? "\n" : "");
+		std::cout << "\t" << pARCSOMListeArcsSortants[uBoucle]->ARCGetDestination() << ((uBoucle + 1) % 3 == 0 ? "\n" : "");
 	}
 
-	//On évite 2 retours à la lignes successifs
+	//On Ã©vite 2 retours Ã  la lignes successifs
 	if (uBoucle % 3 != 0){
 		std::cout << std::endl;
 	}
@@ -419,7 +429,7 @@ void CSommet::SOMAfficherSommet() {
  * Surcharge de l'operateur =
  * Copie le contenu de SOMParam dans l'objet appelant
  *
- * \param SOMParam L'objet CSommet à copier
+ * \param SOMParam L'objet CSommet Ã  copier
  * \return Un pointeur sur l'objet appelant, copie de SOMParam
  */
 CSommet & CSommet::operator=(const CSommet & SOMParam)
@@ -430,22 +440,22 @@ CSommet & CSommet::operator=(const CSommet & SOMParam)
 		uSOMTailleListeS = SOMParam.uSOMTailleListeS;
 		
 		//On alloue les nouvelles listes des arcs
-		if (	( pARCSOMListeArcsArrivants = (CArc*) realloc( pARCSOMListeArcsArrivants, sizeof(CArc) * (SOMParam.uSOMTailleListeA) ) ) == NULL
-			||	( pARCSOMListeArcsSortants  = (CArc*) realloc( pARCSOMListeArcsSortants , sizeof(CArc) * (SOMParam.uSOMTailleListeS) ) ) == NULL ) {
+		if (	( pARCSOMListeArcsArrivants = (CArc **) realloc( pARCSOMListeArcsArrivants, sizeof(CArc *) * (SOMParam.uSOMTailleListeA) ) ) == NULL
+			||	( pARCSOMListeArcsSortants  = (CArc **) realloc( pARCSOMListeArcsSortants , sizeof(CArc *) * (SOMParam.uSOMTailleListeS) ) ) == NULL ) {
 
-			throw(CException(Alloc_Echouee, "CSommet::operator=(const CSommet & SOMParam) : Erreur d'allocation/réallocation.\n"));
+			throw(CException(CSOMMET_Alloc_Echouee, "CSommet::operator=(const CSommet & SOMParam) : Erreur d'allocation/rÃ©allocation.\n"));
 		}
 
 		unsigned int uBoucle;
 
 		//On copier les arcs entrants
 		for (uBoucle = 0; uBoucle < uSOMTailleListeA; uBoucle++) {
-			pARCSOMListeArcsArrivants[uBoucle] = SOMParam.pARCSOMListeArcsArrivants[uBoucle];
+			pARCSOMListeArcsArrivants[uBoucle] = new CArc(*SOMParam.pARCSOMListeArcsArrivants[uBoucle]);
 		}
 
 		//On copie les arcs sortants
 		for (uBoucle = 0; uBoucle < uSOMTailleListeS; uBoucle++) {
-			pARCSOMListeArcsSortants[uBoucle] = SOMParam.pARCSOMListeArcsSortants[uBoucle];
+			pARCSOMListeArcsSortants[uBoucle] = new CArc(*SOMParam.pARCSOMListeArcsSortants[uBoucle]);
 		}
 	}
 	return *this;

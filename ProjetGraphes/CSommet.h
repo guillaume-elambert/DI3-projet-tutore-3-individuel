@@ -2,27 +2,27 @@
 #define CSOMMET_H
 
 #include <iostream>
-#include <string>
+#include <string.h>
 #include "CException.h"
 #include "CArc.h"
 
-#define Lecture_Impossible	20
-#define Alloc_Echouee		21
+#define CSOMMET_Lecture_Impossible	20
+#define CSOMMET_Alloc_Echouee		21
 
 
 class CSommet
 {
 private:
 	unsigned int uSOMId;
-	CArc * pARCSOMListeArcsArrivants;
+	CArc ** pARCSOMListeArcsArrivants;
 	unsigned int uSOMTailleListeA;
-	CArc * pARCSOMListeArcsSortants;
+	CArc ** pARCSOMListeArcsSortants;
 	unsigned int uSOMTailleListeS;
 
 public:
 	
 	/*!
-	 * Constructeur par défaut
+	 * Constructeur par dÃ©faut
 	 * 
 	 */
 	CSommet(void);
@@ -31,22 +31,22 @@ public:
 	/*!
 	 * Constructeur de confort
 	 * 
-	 * \param uNid Le numéro du sommet
+	 * \param uNid Le numÃ©ro du sommet
 	 */
 	CSommet(unsigned int uNid);
 
 	
 	/*!
 	 * Constructeur de recopie. 
-	 * Créé d'un CSommet copie de SOMParam.
+	 * CrÃ©Ã© un objet CSommet copie de SOMParam.
 	 * 
-	 * \param SOMParam L'objet CSommet à copier
+	 * \param SOMParam L'objet CSommet Ã  copier
 	 */
 	CSommet(CSommet & SOMParam);
 
 	
 	/*!
-	 * Destructeur par défaut
+	 * Destructeur par dÃ©faut
 	 * 
 	 */
 	~CSommet(void);
@@ -56,7 +56,7 @@ public:
 	/*!
 	 * Accesseur en lecture de uSOMId.
 	 * 
-	 * \return Le numéro du sommet
+	 * \return Le numÃ©ro du sommet
 	 */
 	unsigned int SOMGetId();
 
@@ -80,8 +80,8 @@ public:
 	/*!
 	 * Ajoute un arc arrivant au sommet.
 	 * 
-	 * \param ARCParam L'objet CArc à ajouter à la liste des arcs arrivants
-	 * \pre ARCParam n'est pas déjà dans la liste des arcs arrivants.
+	 * \param uDestination La destination de l'objet CArc Ã  ajouter Ã  la liste des arcs arrivants
+	 * \pre Il n'existe pas d'objet CArc dans la liste des arcs arrivants ayant pour destination uDestination.
 	 */
 	void SOMAjouterArcArrivant(unsigned int uDestination);
 
@@ -89,18 +89,18 @@ public:
 	/*!
 	 * Retire un arc arrivant au sommet.
 	 * 
-	 * \param ARCParam L'objet CArc à supprimer de la liste des arcs arrivants
-	 * \pre ARCParam est dans la liste des arcs arrivants.
+	 * \param uDestination La destination de l'objet CArc Ã  supprimer de la liste des arcs arrivants
+	 * \pre Il existe un objet CArc dans la liste des arcs arrivants ayant pour destination uDestination.
 	 */
 	void SOMRetirerArcArrivant(unsigned int uDestination);
 
 
 
 	/*!
-	 * Recherche l'arc arrivant ayant pour point de départ le sommet numéro uSOMIdDestination.
+	 * Recherche l'arc arrivant ayant pour point de dÃ©part le sommet numÃ©ro uSOMIdDestination.
 	 * 
-	 * \param uSOMIdDestination Le numéro du sommet de départ de l'arc
-	 * \return La position de l'arc cherché dans la liste des arcs arrivants si il y est, -1 sinon.
+	 * \param uSOMIdDestination Le numÃ©ro du sommet de dÃ©part de l'arc
+	 * \return La position de l'arc cherchÃ© dans la liste des arcs arrivants si il y est, -1 sinon.
 	 */
 	int SOMChercherArcArrivant(unsigned int uSOMIdDestination);
 
@@ -111,35 +111,35 @@ public:
 	 * 
 	 * \param uPos La position de l'arc dans la liste pARCSOMListeArcsArrivants
 	 * \pre  0 <= uPos <= uSOMTailleListeA - 1
-	 * \return Objet CArc à la position uPos dans la liste des arcs entrants
+	 * \return Objet CArc Ã  la position uPos dans la liste des arcs entrants
 	 */
-	CArc SOMLireListeA(unsigned int uPos);
+	CArc* SOMLireListeA(unsigned int uPos);
 
 
 
 	/*!
-	 * Ajoute un arc sortant.
-	 * 
-	 * \param ARCParam L'objet CArc à ajouter à la liste des arcs sortants du sommet
-	 * \pre ARCParam n'est pas déjà dans la liste des arcs sortants.
+	 * Ajoute un arc sortant au sommet.
+	 *
+	 * \param uDestination La destination de l'objet CArc Ã  ajouter Ã  la liste des arcs sortants
+	 * \pre Il n'existe pas d'objet CArc dans la liste des arcs sortants ayant pour destination uDestination.
 	 */
 	void SOMAjouterArcSortant(unsigned int uDestination);
 
 
 	/*!
-	 * Retire un arc sortant.
-	 * 
-	 * \param ARCParam L'objet CArc à supprimer de la liste des arcs sortants du sommet
-	 * \pre ARCParam est dans la liste des arcs sortants.
+	 * Retire un arc sortant au sommet.
+	 *
+	 * \param uDestination La destination de l'objet CArc Ã  supprimer de la liste des arcs sortants
+	 * \pre Il existe un objet CArc dans la liste des arcs sortants ayant pour destination uDestination.
 	 */
 	void SOMRetirerArcSortant(unsigned int uDestination);
 
 
 	/*!
-	 * Recherche l'arc partant ayant pour point d'arrivé le sommet numéro uSOMIdDestination.
+	 * Recherche l'arc partant ayant pour point d'arrivÃ© le sommet numÃ©ro uSOMIdDestination.
 	 * 
-	 * \param uSOMIdDestination Le numéro du sommet d'arrivé de l'arc
-	 * \return La position de l'arc cherché dans la liste des arcs sortants si il y est, -1 sinon.
+	 * \param uSOMIdDestination Le numÃ©ro du sommet d'arrivÃ© de l'arc
+	 * \return La position de l'arc cherchÃ© dans la liste des arcs sortants si il y est, -1 sinon.
 	 */
 	int SOMChercherArcSortant(unsigned int uSOMIdDestination);
 
@@ -149,13 +149,13 @@ public:
 	 * 
 	 * \param uPos La position de l'arc dans la liste pARCSOMListeArcsSortants
 	 * \pre  0 <= uPos <= uSOMTailleListeS - 1
-	 * \return Objet CArc à la position uPos dans la liste des arcs sortants
+	 * \return Objet CArc Ã  la position uPos dans la liste des arcs sortants
 	 */
-	CArc SOMLireListeS(unsigned int uPos);
+	CArc* SOMLireListeS(unsigned int uPos);
 
 
 	/*!
-	 * Teste si deux sommets sont liés dans le sens *this -> SOMParam
+	 * Teste si deux sommets sont liÃ©s dans le sens *this -> SOMParam
 	 * 
 	 * \param SOMParam true s'il existe un arc allant de cet objet vers SOMParam, false sinon.
 	 * \return 
@@ -182,7 +182,7 @@ public:
 	 * Surcharge de l'operateur =
 	 * Copie le contenu de SOMParam dans l'objet appelant
 	 * 
-	 * \param SOMParam L'objet CSommet à copier
+	 * \param SOMParam L'objet CSommet Ã  copier
 	 * \return Un pointeur sur l'objet appelant, copie de SOMParam
 	 */
 	CSommet & operator=(const CSommet & SOMParam);

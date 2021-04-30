@@ -1,7 +1,7 @@
 #include "CArc.h"
 
 /*!
- * Constructeur par défaut
+ * Constructeur par dÃ©faut
  *
  */
 CArc::CArc(void)
@@ -13,7 +13,7 @@ CArc::CArc(void)
 /*!
  * Constructeur de confort
  * 
- * \param uARCDestination Le numéro du sommet de destination de l'arc
+ * \param uARCDestination Le numÃ©ro du sommet de destination de l'arc
  */
 CArc::CArc(unsigned int uARCDestinationParam)
 {
@@ -23,7 +23,7 @@ CArc::CArc(unsigned int uARCDestinationParam)
 /*!
  * Constructeur de recopie
  *
- * \param ARCParam L'arc à copier
+ * \param ARCParam L'arc Ã  copier
  */
 CArc::CArc(CArc & ARCParam)
 {
@@ -32,7 +32,7 @@ CArc::CArc(CArc & ARCParam)
 
 
 /*!
- * Destructeur par défaut
+ * Destructeur par dÃ©faut
  *
  */
 CArc::~CArc(void)

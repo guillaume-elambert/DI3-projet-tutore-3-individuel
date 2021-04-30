@@ -2,9 +2,9 @@
 #define CEXCEPTION_H
 
 #include <iostream>
-#include <string>
+#include <string.h>
 
-#define Erreur_Par_Defaut 0
+#define Erreur_Par_Defaut -1
 
 
 class CException
@@ -18,7 +18,7 @@ private:
 public:
 
 	/*!
-	 * Constructeur par défaut
+	 * Constructeur par dÃ©faut
 	 * 
 	 */
 	CException();
@@ -51,7 +51,7 @@ public:
 
 	
 	/*!
-	 * Accesseur en écriture du code d'erreur
+	 * Accesseur en Ã©criture du code d'erreur
 	 * 
 	 * \param uErreur Le nouveau code d'erreur.
 	 */
@@ -67,7 +67,7 @@ public:
 
 
 	/*!
-	 * Accesseur en écriture du message d'erreur
+	 * Accesseur en Ã©criture du message d'erreur
 	 * 
 	 * \param sMessage Le nouveau message d'erreur.
 	 */
