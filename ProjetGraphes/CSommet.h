@@ -1,3 +1,12 @@
+/*!
+ * \file CSommet.h
+ * \brief Fichier contenant la déclaration de la classe CSommet
+ * \author Guillaume ELAMBERT
+ * \author Clément NONCHER-GILLET
+ * \date 2021
+ */
+
+
 #ifndef CSOMMET_H
 #define CSOMMET_H
 
@@ -10,14 +19,20 @@
 #define CSOMMET_Alloc_Echouee		21
 
 
+/*!
+ * \brief Classe des sommets d'un graphe.
+ * \author Guillaume ELAMBERT
+ * \author Clément NONCHER-GILLET
+ * \date 2021
+ */
 class CSommet
 {
 private:
-	unsigned int uSOMId;
-	CArc ** pARCSOMListeArcsArrivants;
-	unsigned int uSOMTailleListeA;
-	CArc ** pARCSOMListeArcsSortants;
-	unsigned int uSOMTailleListeS;
+	unsigned int uSOMId;				/*!< Le numéroe du sommet. */
+	CArc ** pARCSOMListeArcsArrivants;	/*!< La liste des arcs arrivants au sommet. */
+	unsigned int uSOMTailleListeA;		/*!< Le nombre d'arcs arrivants au sommet. */
+	CArc ** pARCSOMListeArcsSortants;	/*!< La liste des arcs partants du sommet. */
+	unsigned int uSOMTailleListeS;		/*!< Le nombre d'arcs partants du sommet. */
 
 public:
 	

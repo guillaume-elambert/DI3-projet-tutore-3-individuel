@@ -1,3 +1,12 @@
+/*!
+ * \file CException.cpp
+ * \brief Fichier contenant l'implémentation de la classe CException
+ * \author Guillaume ELAMBERT
+ * \author Clément NONCHER-GILLET
+ * \date 2021
+ */
+
+
 #include "CException.h"
 
 /*!
@@ -19,7 +28,7 @@ CException::CException()
 CException::CException(unsigned int uErreur, const char * sMessage)
 {
 	uEXCErreur = uErreur;
-	sEXCEMessage = _strdup(sMessage);
+	sEXCEMessage = sMessage;
 }
 
 
@@ -29,7 +38,6 @@ CException::CException(unsigned int uErreur, const char * sMessage)
  */
 CException::~CException()
 {
-	if(sEXCEMessage) free(sEXCEMessage);
 }
 
 
@@ -62,7 +70,7 @@ void CException::EXCSetErreur(unsigned int uErreur)
  */
 const char * CException::EXCGetMessage(void)
 {
-	return sEXCEMessage;
+	return sEXCEMessage.c_str();
 }
 
 
@@ -73,6 +81,6 @@ const char * CException::EXCGetMessage(void)
  */
 void CException::EXCSetMessage(const char * sMessage)
 {
-	sEXCEMessage = _strdup(sMessage);
+	sEXCEMessage = sMessage;
 }
 

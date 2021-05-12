@@ -1,3 +1,12 @@
+/*!
+ * \file CException.h
+ * \brief Fichier contenant la déclaration de la classe CException.
+ * \author Guillaume ELAMBERT
+ * \author Clément NONCHER-GILLET
+ * \date 2021
+ */
+
+
 #ifndef CEXCEPTION_H
 #define CEXCEPTION_H
 
@@ -6,13 +15,18 @@
 
 #define Erreur_Par_Defaut -1
 
-
+/*!
+ * \brief Classe d'exception personnalisée.
+ * \author Guillaume ELAMBERT
+ * \author Clément NONCHER-GILLET
+ * \date 2021
+ */
 class CException
 {
 	//Attributs
 private:
-	unsigned int uEXCErreur;
-	char * sEXCEMessage;
+	unsigned int uEXCErreur;	/*!< Le numéro de l'exception. */
+	std::string sEXCEMessage;	/*!< Le message de l'exception. */
 
 	//Constructeurs
 public:

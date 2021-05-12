@@ -1,3 +1,12 @@
+/*!
+ * \file CArc.cpp
+ * \brief Fichier contenant l'implémentation de la classe CArc
+ * \author Guillaume ELAMBERT
+ * \author Clément NONCHER-GILLET
+ * \date 2021
+ */
+
+
 #include "CArc.h"
 
 /*!

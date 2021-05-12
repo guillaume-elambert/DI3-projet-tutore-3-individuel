@@ -1,11 +1,26 @@
+/*!
+ * \file CArc.h
+ * \brief Fichier contenant la déclaration de la classe CArc.
+ * \author Guillaume ELAMBERT
+ * \author Clément NONCHER-GILLET
+ * \date 2021
+ */
+
+
 #ifndef CARC_H
 #define CARC_H
 
+/*!
+ * \brief Classe des arcs d'un sommet.
+ * \author Guillaume ELAMBERT
+ * \author Clément NONCHER-GILLET
+ * \date 2021
+ */
 class CArc
 {
 private:
-
-	unsigned int uARCDestination;
+	
+	unsigned int uARCDestination;	/*!< Le numéro du sommet de destination. */
 
 public:
 

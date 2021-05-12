@@ -1,3 +1,12 @@
+/*!
+ * \file CSommet.cpp
+ * \brief Fichier contenant l'implémentation de la classe CSommet
+ * \author Guillaume ELAMBERT
+ * \author Clément NONCHER-GILLET
+ * \date 2021
+ */
+
+
 #include "CSommet.h"
 
 
@@ -207,7 +216,7 @@ CArc* CSommet::SOMLireListeA(unsigned int uPos)
 	//Entrée : uPos est un index hors limite de la liste des arcs arrivants
 	//		=> On lève une erreur
 	if (uPos > uSOMTailleListeA - 1 || uPos < 0) {
-		char sExceptionMessage[] = "";
+		char sExceptionMessage[255];
 		sprintf_s(sExceptionMessage, 255, "CSommet::SOMLireListeA(unsigned int uPos) : Impossible de lire l'arc d'arrivee %d.\n", uPos);
 		throw CException(CSOMMET_Lecture_Impossible, sExceptionMessage);
 	}
@@ -318,7 +327,7 @@ CArc* CSommet::SOMLireListeS(unsigned int uPos)
 	//Entrée : uPos est un index hors limite de la liste des arcs sortants
 	//		=> On lève une erreur
 	if (uPos > uSOMTailleListeS - 1 || uPos < 0) {
-		char sExceptionMessage[] = "";
+		char sExceptionMessage[255];
 		sprintf_s(sExceptionMessage, 255, "CSommet::SOMLireListeS(unsigned int uPos) : Impossible de lire l'arc de sortie %d.\n", uPos);
 		throw CException(CSOMMET_Lecture_Impossible, sExceptionMessage);
 	}

@@ -1,3 +1,12 @@
+/*!
+ * \file CGraphe.cpp
+ * \brief Fichier contenant l'implémentation de la classe CGraphe
+ * \author Guillaume ELAMBERT
+ * \author Clément NONCHER-GILLET
+ * \date 2021
+ */
+
+
 #include "CGraphe.h"
 
 
@@ -41,7 +50,7 @@ CGraphe::CGraphe(const char *cpContenu, bool bContenuEstChemin)
 		if (bContenuEstChemin) {
 			std::string sFileContent(""), sBuffer;
 			std::fstream FILfichier(cpContenu);
-			char sExceptionMessage[] = "";
+			char sExceptionMessage[255];
 
 			//Entrée : Le fichier à pu être ouvert
 			//Sinon  : On renvoie une erreur
@@ -53,6 +62,9 @@ CGraphe::CGraphe(const char *cpContenu, bool bContenuEstChemin)
 					sFileContent += sBuffer + (!FILfichier.eof() ? "\n" : "");
 				}
 
+				FILfichier.close();
+				cpContentToUse = _strdup(sFileContent.c_str());
+
 			}
 			else {
 				FILfichier.close();
@@ -60,8 +72,6 @@ CGraphe::CGraphe(const char *cpContenu, bool bContenuEstChemin)
 				throw CException(CGRAPHE_Ouverture_Fichier_Impossible, sExceptionMessage);
 			}
 
-			FILfichier.close();
-			cpContentToUse = _strdup(sFileContent.c_str());
 		}
 		else {
 			cpContentToUse = _strdup(cpContenu);
@@ -71,7 +81,7 @@ CGraphe::CGraphe(const char *cpContenu, bool bContenuEstChemin)
 		pSOMGPHListeSommet = NULL;
 		uGPHTailleLSom = 0;
 
-		char sExceptionMessage[] = "";
+		char sExceptionMessage[255];
 
 		std::string sRegexResult;
 		std::regex rRegex("NBSommets[ \\t]*=[ \\t]*([0-9]+)[ \\t]*\\nNBArcs[ \\t]*=[ \\t]*([0-9]+)[ \\t]*\\nSommets[ \\t]*=[ \\t]*(\\[)[ \\t]*\\n((?:Numero[ \\t]*=[ \\t]*[0-9]+\\n)*)\\][ \\t]*\\nArcs[ \\t]*=[ \\t]*(\\[)[ \\t]*\\n((?:Debut[ \\t]*=[ \\t]*[0-9]+[ \\t]*,[ \\t]*Fin[ \\t]*=[ \\t]*([0-9]+)[ \\t]*\\n)*)\\]\\s*");
@@ -245,7 +255,7 @@ unsigned int CGraphe::GPHAjouterSommet(unsigned int uNumero)
 	//Entrée : Le sommet existe déjà dans le graphe
 	//		=> On renvoie une erreurs
 	if (GPHChercherSommet(uNumero) != -1) {
-		char sExceptionMessage[] = "";
+		char sExceptionMessage[255];
 		sprintf_s(sExceptionMessage, 255, "CGraphe::GPHAjouterSommet(unsigned int uNumero) : Le sommet numero %d existe deja.\n", uNumero);
 		throw CException(CGRAPHE_Sommet_Existant, sExceptionMessage);
 	}
@@ -351,7 +361,7 @@ bool CGraphe::GPHLiees(unsigned int uSommetDep, unsigned int uSommetArr)
  */
 void CGraphe::GPHLierSommets(unsigned int uIdDepart, unsigned int uIdArrivee)
 {
-	char sExceptionMessage[] = "";
+	char sExceptionMessage[255];
 
 	//Entrée : Pas de tentative de relier un sommet avec lui-même
 	//Sinon  : On renvoie une erreur
@@ -416,7 +426,7 @@ void CGraphe::GPHDelierSommets(unsigned int uIdDepart, unsigned int uIdArrivee)
 	int iPosArr = GPHChercherSommet(uIdArrivee);
 
 
-	char sExceptionMessage[] = "";
+	char sExceptionMessage[255];
 
 	//Entrée : le sommet d'arrivé existe dans le graphe
 	//Sinon  : On renvoie une erreur
@@ -547,7 +557,7 @@ void CGraphe::GPHAfficherSommet(unsigned int uId)
 		pSOMGPHListeSommet[iPos]->SOMAfficherSommet();
 	}
 	else {
-		char sExceptionMessage[] = "";
+		char sExceptionMessage[255];
 		sprintf_s(sExceptionMessage, 255, "Le sommet %d n'est pas dans le graphe.\n", uId);
 		throw CException(CGRAPHE_Sommet_Inconnu, sExceptionMessage);
 	}

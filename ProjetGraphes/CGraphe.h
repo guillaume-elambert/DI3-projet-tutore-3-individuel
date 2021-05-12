@@ -1,3 +1,12 @@
+/*!
+ * \file CGraphe.h
+ * \brief Fichier contenant la déclaration de la classe CGraphe
+ * \author Guillaume ELAMBERT
+ * \author Clément NONCHER-GILLET
+ * \date 2021
+ */
+
+
 #ifndef CGRAPHE_H
 #define CGRAPHE_H
 
@@ -21,12 +30,19 @@
 #define CGRAPHE_Arc_Existant				 10
 #define CGRAPHE_Alloc_Echouee				 11
 
+
+/*!
+ * \brief Classe du graphe.
+ * \author Guillaume ELAMBERT
+ * \author Clément NONCHER-GILLET
+ * \date 2021
+ */
 class CGraphe
 {
 private :
 
-	CSommet ** pSOMGPHListeSommet;
-	unsigned int uGPHTailleLSom;
+	CSommet ** pSOMGPHListeSommet;	/*!< La liste des sommets du graphe. */
+	unsigned int uGPHTailleLSom;	/*!< Le nombre de sommets du graphe. */
 
 
 public:

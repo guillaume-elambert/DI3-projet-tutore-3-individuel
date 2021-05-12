@@ -1,5 +1,12 @@
-// ProjetGraphes.cpp : Ce fichier contient la fonction 'main'. L'exécution du programme commence et se termine à cet endroit.
-//
+/*!
+ * \file ProjetGraphes.cpp
+ * \brief Fichier contenant la fonction main
+ * \warning La fonction main nécessite au moins 1 chemin vers un fichier pour traiter la création d'un graphe, sinon fin de programme
+ * \author Guillaume ELAMBERT
+ * \author Clément NONCHER-GILLET
+ * \date 2021
+ */
+
 
 #include <iostream>
 #include <Windows.h>
@@ -12,7 +19,14 @@
 using namespace std;
 
 
-
+/*!
+ * La fonction principale.
+ * 
+ * \warning Nécessite au moins 1 chemin vers un fichier pour traiter la création d'un graphe, sinon fin de programme
+ * \param argc Le nombre d'arguments passés au programme
+ * \param argv La liste des arguments passés au programme
+ * \return 0 => l'exécution s'est faite sans erreur
+ */
 int main(int argc, char * argv[])
 {
 	// Set console code page to UTF-8 so console known how to interpret string data
@@ -23,34 +37,41 @@ int main(int argc, char * argv[])
 
 
 	if (argc > 1) {
+
 		CGraphe *GPHLeGraphe = NULL;
 		CGraphe *GPHLeGrapheInverse = NULL;
+
+		//On parcourt l'ensemble des chemins passés en paramètre
 		for (int i = 1; i < argc; ++i) {
 			try {
 				printf(i > 1 ? "\n\n" : "");
+
+
 				printf("----- GRAPHE DU FICHIER \"%s\" -----\n\n", argv[i]);
 				GPHLeGraphe = new CGraphe(argv[i], true);
 				GPHLeGraphe->GPHAfficherGraphe();
-				GPHLeGrapheInverse = &GPHLeGraphe->GPHRenverserGraphe();
+
 
 				printf("\n----- GRAPHE INVERSE DU FICHIER \"%s\" -----\n\n", argv[i]);
+				GPHLeGrapheInverse = &GPHLeGraphe->GPHRenverserGraphe();
 				GPHLeGrapheInverse->GPHAfficherGraphe();
 
 				cout << endl << endl;
+				
 				delete GPHLeGraphe;
 				delete GPHLeGrapheInverse;
 			}
+			//On gère les erreurs de création du graphe et d'inversion du graphe
 			catch (CException EXCELevee) {
-				delete GPHLeGraphe;
-				delete GPHLeGrapheInverse;
-				std::cerr << EXCELevee.EXCGetMessage();
+				cerr << EXCELevee.EXCGetMessage();
 			}
 		}
 	}
 	else {
-		printf("Il faut passer au moins un fichier en parametre.\n");
+		cout << "Il faut passer au moins un fichier en paramètre.\n";
 	}
 
+	cout << "\n\nAppuyez sur une touche pour fermer" << endl;
 	_getch();
 	return 0;
 }
