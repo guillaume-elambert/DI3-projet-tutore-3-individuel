@@ -67,10 +67,9 @@ public:
 	 * Création d'un graphe correctement initialisé à partir d'une chaîne de caractère OU un chemin vers un fichier contenant la chaîne de caractères.
 	 * OU Une erreur si contenu est mal formatté ou qu'il contient des incohérences ou des erreurs.
 	 *
-	 * \param cpContenu La chaîne de caractère utilisée pour initialiser l'objet CGraphe
-	 * \param bContenuEstChemin Un booléen qui indique si la variable cpContenu correspond à un chemin vers un fichier contenant l'initialisation d'un CGraphe (true) ou s'il s'agit directement d'une chaîne de caractère d'initialisation
+	 * \param cpContenuFichier La chaîne de caractère utilisée pour initialiser l'objet CGraphe
 	 */
-	CGraphe(const char * cpContenu, bool bContenuEstChemin);
+	CGraphe(const char * cpContenuFichier);
 
 
 	/*!

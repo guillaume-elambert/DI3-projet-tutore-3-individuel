@@ -10,6 +10,8 @@
 
 #include <iostream>
 #include <Windows.h>
+
+#include "CFichier.h"
 #include "CGraphe.h"
 #include "CSommet.h"
 #include "CArc.h"
@@ -40,15 +42,18 @@ int main(int argc, char * argv[])
 
 		CGraphe *GPHLeGraphe = NULL;
 		CGraphe *GPHLeGrapheInverse = NULL;
+		CFichier *FILLeFichier = NULL;
 
 		//On parcourt l'ensemble des chemins passés en paramètre
 		for (int i = 1; i < argc; ++i) {
 			try {
+				FILLeFichier = new CFichier(argv[i]);
+
 				printf(i > 1 ? "\n\n" : "");
 
 
 				printf("----- GRAPHE DU FICHIER \"%s\" -----\n\n", argv[i]);
-				GPHLeGraphe = new CGraphe(argv[i], true);
+				GPHLeGraphe = new CGraphe(FILLeFichier->getContenu());
 				GPHLeGraphe->GPHAfficherGraphe();
 
 

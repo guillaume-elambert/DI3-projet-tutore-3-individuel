@@ -37,46 +37,12 @@ CGraphe::CGraphe(CGraphe & GPHParam) {
  * Création d'un graphe correctement initialisé à partir d'une chaîne de caractère OU un chemin vers un fichier contenant la chaîne de caractères. 
  * OU Une erreur si contenu est mal formatté ou qu'il contient des incohérences ou des erreurs.
  *
- * \param cpContenu La chaîne de caractère utilisée pour initialiser l'objet CGraphe
- * \param bContenuEstChemin Un booléen qui indique si la variable cpContenu correspond à un chemin vers un fichier contenant l'initialisation d'un CGraphe (true) ou s'il s'agit directement d'une chaîne de caractère d'initialisation
+ * \param cpContenuFichier La chaîne de caractère utilisée pour initialiser l'objet CGraphe
  */
-CGraphe::CGraphe(const char *cpContenu, bool bContenuEstChemin)
+CGraphe::CGraphe(const char *cpContenuFichier)
 {
-	if (cpContenu) {
-		char *cpContentToUse;
-
-		//Entrée : La variable cpContenu correspond au chemin vers un fichier
-		//		=> On ouvre le fichier et on utilise le contenu pour l'initialisation
-		if (bContenuEstChemin) {
-			std::string sFileContent(""), sBuffer;
-			std::fstream FILfichier(cpContenu);
-			char sExceptionMessage[255];
-
-			//Entrée : Le fichier à pu être ouvert
-			//Sinon  : On renvoie une erreur
-			if (FILfichier.is_open())
-			{
-				while (std::getline(FILfichier, sBuffer)) {
-					//On concatène la ligne courrante avec les lignes précédentes
-					//On ajoute on retour à la ligne si la ligne courrante n'est pas la dernière du fichier
-					sFileContent += sBuffer + (!FILfichier.eof() ? "\n" : "");
-				}
-
-				FILfichier.close();
-				cpContentToUse = _strdup(sFileContent.c_str());
-
-			}
-			else {
-				FILfichier.close();
-				sprintf_s(sExceptionMessage, 255, "CGraphe::CGraphe(const char *cpChemin) : Impossible d'ouvrir le fichier \"%s\"\n", cpContenu);
-				throw CException(CGRAPHE_Ouverture_Fichier_Impossible, sExceptionMessage);
-			}
-
-		}
-		else {
-			cpContentToUse = _strdup(cpContenu);
-		}
-
+	if (cpContenuFichier) {
+		
 		//Initialisation par défaut
 		pSOMGPHListeSommet = NULL;
 		uGPHTailleLSom = 0;
@@ -94,7 +60,7 @@ CGraphe::CGraphe(const char *cpContenu, bool bContenuEstChemin)
 
 		//Entrée : Le fichier correspond à l'expression régulière
 		//Sinon  : On renvoie une erreur
-		if (std::regex_match(cpContentToUse, cmMatchGlobal, rRegex)) {
+		if (std::regex_match(cpContenuFichier, cmMatchGlobal, rRegex)) {
 
 			//On parcourt l'ensemble des résultats des groupes de capture du fichier (cf. la variable regex rRegex)
 			for (unsigned uiRegexIndex = 1; uiRegexIndex < cmMatchGlobal.size(); ++uiRegexIndex) {
@@ -156,14 +122,14 @@ CGraphe::CGraphe(const char *cpContenu, bool bContenuEstChemin)
 						//Entrée : le nombre de sommets définit est différent que celui trouvé
 						//		=> on renvoie une erreur
 						if (iNbInit == 1 && iCurrentResIndex != iNbSommets) {
-							sprintf_s(sExceptionMessage, 255, "CGraphe::CGraphe(const char *cpContenu, bool bContenuEstChemin) : %d sommets attendus %d sommets obtenus\n", iNbSommets, iCurrentResIndex);
+							sprintf_s(sExceptionMessage, 255, "CGraphe::CGraphe(const char *cpContenuFichier, bool bContenuEstChemin) : %d sommets attendus %d sommets obtenus\n", iNbSommets, iCurrentResIndex);
 							throw CException(CGRAPHE_Erreur_NbArcs, sExceptionMessage);
 						}
 
 						//Entrée : le nombre d'arcs définit est différent que celui trouvé
 						//		=> On renvoie une erreur
 						else if (iNbInit == 2 && (iCurrentResIndex /= 2) != iNbArcs) {
-							sprintf_s(sExceptionMessage, 255, "CGraphe::CGraphe(const char *cpContenu, bool bContenuEstChemin) : %d arcs attendus %d arcs obtenus\n", iNbArcs, iCurrentResIndex);
+							sprintf_s(sExceptionMessage, 255, "CGraphe::CGraphe(const char *cpContenuFichier, bool bContenuEstChemin) : %d arcs attendus %d arcs obtenus\n", iNbArcs, iCurrentResIndex);
 							throw CException(CGRAPHE_Erreur_NbArcs, sExceptionMessage);
 						}
 					}
@@ -185,14 +151,14 @@ CGraphe::CGraphe(const char *cpContenu, bool bContenuEstChemin)
 						//Entrée : On a défini un nombre de sommets à 0 pourtant on à defini des arcs
 						//		=> On renvoie une erreur
 						if (iNbSommets == 0 && iNbArcs != 0) {
-							throw CException(CGRAPHE_Erreur_NbArcs, "CGraphe::CGraphe(const char *cpContenu, bool bContenuEstChemin) : Le nombre de sommets a été défini sur 0, le nombre d'arcs devrait l'être aussi.\n");
+							throw CException(CGRAPHE_Erreur_NbArcs, "CGraphe::CGraphe(const char *cpContenuFichier, bool bContenuEstChemin) : Le nombre de sommets a été défini sur 0, le nombre d'arcs devrait l'être aussi.\n");
 						}
 
 
 						//Entrée : On a dépasser le nombre de possibilité totale de laision entre les sommets
 						//		=> On renvoie une erreur
 						if (iNbArcs > (iNbSommets * iNbSommets - iNbSommets)) {
-							sprintf_s(sExceptionMessage, 255, "CGraphe::CGraphe(const char *cpContenu, bool bContenuEstChemin) : Top d'arcs a initialiser, %d maximum .\n", (iNbSommets * iNbSommets - iNbSommets));
+							sprintf_s(sExceptionMessage, 255, "CGraphe::CGraphe(const char *cpContenuFichier, bool bContenuEstChemin) : Top d'arcs a initialiser, %d maximum .\n", (iNbSommets * iNbSommets - iNbSommets));
 							throw CException(CGRAPHE_Erreur_NbArcs, sExceptionMessage);
 						}
 
@@ -201,14 +167,14 @@ CGraphe::CGraphe(const char *cpContenu, bool bContenuEstChemin)
 					break;
 				}
 			}
-			free(cpContentToUse);
+			//free(cpContenuFichier);
 		}
 		else {
-			throw CException(CGRAPHE_Erreur_Syntaxe, "CGraphe::CGraphe(const char *cpContenu, bool bContenuEstChemin) : La chaîne de caractères ne correspond pas au format attendu\n");
+			throw CException(CGRAPHE_Erreur_Syntaxe, "CGraphe::CGraphe(const char *cpContenuFichier, bool bContenuEstChemin) : La chaîne de caractères ne correspond pas au format attendu\n");
 		}
 	}
 	else {
-	throw CException(CGRAPHE_Erreur_Syntaxe, "CGraphe::CGraphe(const char *cpContenu, bool bContenuEstChemin) : La chaîne de caractères est nulle\n");
+	throw CException(CGRAPHE_Erreur_Syntaxe, "CGraphe::CGraphe(const char *cpContenuFichier, bool bContenuEstChemin) : La chaîne de caractères est nulle\n");
 	}
 }
 

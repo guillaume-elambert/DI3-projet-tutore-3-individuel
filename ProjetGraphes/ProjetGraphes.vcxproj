@@ -155,6 +155,7 @@
   <ItemGroup>
     <ClCompile Include="CArc.cpp" />
     <ClCompile Include="CException.cpp" />
+    <ClCompile Include="CFichier.cpp" />
     <ClCompile Include="CGraphe.cpp" />
     <ClCompile Include="CSommet.cpp" />
     <ClCompile Include="ProjetGraphes.cpp" />
@@ -162,6 +163,7 @@
   <ItemGroup>
     <ClInclude Include="CArc.h" />
     <ClInclude Include="CException.h" />
+    <ClInclude Include="CFichier.h" />
     <ClInclude Include="CGraphe.h" />
     <ClInclude Include="CSommet.h" />
   </ItemGroup>
