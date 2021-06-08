@@ -47,6 +47,9 @@ CGraphe::CGraphe(const char *cpContenuFichier)
 		pSOMGPHListeSommet = NULL;
 		uGPHTailleLSom = 0;
 
+		pSOMEnsembleStableMax = NULL;
+		uGPHTailleEnsembleStableMax = 0;
+
 		char sExceptionMessage[255];
 
 		std::string sRegexResult;
@@ -107,6 +110,7 @@ CGraphe::CGraphe(const char *cpContenuFichier)
 									try {
 										//On relie les deux sommets
 										this->GPHLierSommets(iTempInitValue, iResValue);
+										this->GPHLierSommets(iResValue, iTempInitValue);
 									}
 									catch (CException EXCELevee) {
 										std::cerr << EXCELevee.EXCGetMessage();
@@ -185,7 +189,10 @@ CGraphe::CGraphe(const char *cpContenuFichier)
  */
 CGraphe::~CGraphe(void)
 {
-	if(pSOMGPHListeSommet) delete[] pSOMGPHListeSommet;
+	if (pSOMGPHListeSommet) {
+		//delete[] pSOMGPHListeSommet;
+		free(pSOMGPHListeSommet);
+	}
 }
 
 
@@ -217,29 +224,57 @@ int CGraphe::GPHChercherSommet(unsigned int uId)
  */
 unsigned int CGraphe::GPHAjouterSommet(unsigned int uNumero)
 {
+	CSommet * pSOMToAdd = new CSommet(uNumero);
+
+	try {
+		//On ajoute le nouveau sommet
+		GPHAjouterSommet(pSOMToAdd);
+	}
+	catch (CException eExceptLevee) {
+		delete pSOMToAdd;
+		throw eExceptLevee;
+	}
+
+	return uGPHTailleLSom - 1;
+}
+
+
+/*!
+ * Ajoute un nouveau sommet dans le graphe.
+ * OU renvoie une erreur si le sommet existe déjà
+ * 
+ * \param pSOMParam Le sommet à ajouter
+ * \return L'index du sommet créé
+ */
+unsigned int CGraphe::GPHAjouterSommet(CSommet * pSOMParam)
+{
+	if (pSOMParam == NULL) {
+		throw CException(-1, "CGraphe::GPHAjouterSommet(CSommet * pSOMParam) : Le sommet passe en parametre est NULL.");
+	}
 
 	//Entrée : Le sommet existe déjà dans le graphe
 	//		=> On renvoie une erreurs
-	if (GPHChercherSommet(uNumero) != -1) {
+	if (GPHChercherSommet(pSOMParam->SOMGetId()) != -1) {
 		char sExceptionMessage[255];
-		sprintf_s(sExceptionMessage, 255, "CGraphe::GPHAjouterSommet(unsigned int uNumero) : Le sommet numero %d existe deja.\n", uNumero);
+		sprintf_s(sExceptionMessage, 255, "CGraphe::GPHAjouterSommet(CSommet * pSOMParam) : Le sommet numero %d existe deja.\n", pSOMParam->SOMGetId());
 		throw CException(CGRAPHE_Sommet_Existant, sExceptionMessage);
 	}
 
 
 	//Nouveau tableau à assigner à pSOMGPHListeSommet
-	CSommet ** pSOMNouvelleListe = (CSommet **) realloc(pSOMGPHListeSommet, sizeof(CSommet *)*(uGPHTailleLSom + 1));
+	CSommet ** pSOMNouvelleListe = (CSommet **)realloc(pSOMGPHListeSommet, sizeof(CSommet *)*(uGPHTailleLSom + 1));
 
 	//Erreur si allocation échouée
 	if (pSOMNouvelleListe == NULL) {
-		throw(CException(CGRAPHE_Alloc_Echouee, "CGraphe::GPHAjouterSommet(unsigned int uNumero) : Erreur d'allocation/réallocation.\n"));
+		throw(CException(CGRAPHE_Alloc_Echouee, "CGraphe::GPHAjouterSommet(CSommet * pSOMParam) : Erreur d'allocation/réallocation.\n"));
 	}
 
 	//On ajoute le nouveau sommet
-	pSOMNouvelleListe[uGPHTailleLSom] = new CSommet(uNumero);
+	pSOMNouvelleListe[uGPHTailleLSom] = pSOMParam;
 	pSOMGPHListeSommet = pSOMNouvelleListe;
 
 	uGPHTailleLSom++;
+
 	return uGPHTailleLSom - 1;
 }
 
@@ -261,8 +296,8 @@ void CGraphe::GPHSupprimerSommet(unsigned int uId)
 		//On supprime tous les arcs (arrivants et partant) du sommet
 		for (unsigned uBoucle = 0; uBoucle < uGPHTailleLSom; uBoucle++) {
 			try {
-				GPHDelierSommets(uId, uBoucle);
-				GPHDelierSommets(uBoucle, uId);
+				GPHDelierSommets(uId, pSOMGPHListeSommet[uBoucle]->SOMGetId());
+				GPHDelierSommets(pSOMGPHListeSommet[uBoucle]->SOMGetId(), uId);
 			}
 			catch (CException EXCELevee) {
 				std::cerr << EXCELevee.EXCGetMessage();
@@ -286,7 +321,7 @@ void CGraphe::GPHSupprimerSommet(unsigned int uId)
 				uCounter++;
 			}
 			else {
-				delete pSOMNouvelleListe[uCounter];
+				//delete pSOMGPHListeSommet[uBoucle];
 			}
 		}
 
@@ -529,6 +564,21 @@ void CGraphe::GPHAfficherSommet(unsigned int uId)
 	}
 }
 
+/*!
+ * Méthode qui affiche l'ensemble stable maximum du graphe
+ *
+ */
+void CGraphe::GPHAfficherEnsembleStableMax()
+{
+	std::cout << "Nb sommets ensemble stable max : " << uGPHTailleEnsembleStableMax << std::endl;
+
+	//On affiche tous les sommets
+	for (unsigned int uBoucle = 0; uBoucle < uGPHTailleEnsembleStableMax; uBoucle++) {
+		printf("%d\t", pSOMEnsembleStableMax[uBoucle]->SOMGetId());
+	}
+	std::cout << std::endl;
+}
+
 
 /*!
  * Affiche le graphe
@@ -566,6 +616,148 @@ CGraphe & CGraphe::GPHRenverserGraphe() {
 		GPHGrapheRenv->pSOMGPHListeSommet[uBoucle]->SOMInverser();
 	}
 	return *GPHGrapheRenv;
+}
+
+
+/*!
+ * Méthode qui initialise le plus grand ensemble stable du graphe gGraphe ou du graphe appelant si 
+ * gGraphe est NULL ou qu'il ne possède pas de sommets.
+ * 
+ * \param gGraphe Le graphe dont on veut initialiser le plus grand ensemble stable.
+ */
+void CGraphe::calcStableMax(CGraphe *gGraphe) {
+	this->calcStableMax(gGraphe, NULL, 0);
+}
+
+
+/*!
+ * Méthode qui initialise le plus grand ensemble stable du graphe gGraphe ou du graphe appelant si 
+ * gGraphe est NULL ou qu'il ne possède pas de sommets.
+ * 
+ * \param gGraphe Le graphe dont on veut initialiser le plus grand ensemble stable.
+ * \param pSOMEnsembleStable La liste des sommets de l'ensemble stable en cours de calcul.
+ * \param uiNbElemEnsemble Le nombre de sommets présents dans la liste pSOMEnsembleStable.
+ */
+void CGraphe::calcStableMax(CGraphe *gGraphe, CSommet ** pSOMEnsembleStable, unsigned int uiNbElemEnsemble) {
+
+	// Entrée : le graphe passé en paramètre est null OU il n'a pas de sommets
+	//		 => on utilise le graphe qui a appeler la méthode
+	if (gGraphe == NULL || gGraphe->pSOMGPHListeSommet == NULL) {
+
+		if (this == NULL) {
+			return;
+		}
+
+		if (gGraphe == NULL) {
+			gGraphe = this;
+		}
+		else {
+			*gGraphe = *this;
+		}
+	}
+
+	if (pSOMEnsembleStable == NULL) {
+		uiNbElemEnsemble = 0;
+	}
+
+
+	if (gGraphe->uGPHTailleLSom == 0) {
+	
+		if (uiNbElemEnsemble > gGraphe->uGPHTailleEnsembleStableMax) {
+
+			if (gGraphe->pSOMEnsembleStableMax != NULL) free(gGraphe->pSOMEnsembleStableMax);
+			gGraphe->pSOMEnsembleStableMax = (CSommet **) malloc(sizeof(CSommet *) * uiNbElemEnsemble);
+
+			if (gGraphe->pSOMEnsembleStableMax == NULL) {
+				free(gGraphe->pSOMEnsembleStableMax);
+				throw CException(CGRAPHE_Alloc_Echouee, "CGraphe::calcStableMax(CGraphe *gGraphe, CSommet ** pSOMEnsembleStable, unsigned int uiNbElemEnsemble) : Allocation échouée");
+			}
+
+			//On copie les sommets qui sont dans la liste de l'ensemble stable
+			for (unsigned int i = 0; i < uiNbElemEnsemble; ++i) {
+				gGraphe->pSOMEnsembleStableMax[i] = new CSommet();
+				*gGraphe->pSOMEnsembleStableMax[i] = *pSOMEnsembleStable[i];
+			}
+
+			gGraphe->uGPHTailleEnsembleStableMax = uiNbElemEnsemble;
+		}
+		
+		free(pSOMEnsembleStable);
+		
+		return;
+	}
+
+	CSommet *pSOMCurrent;
+	CSommet ** pSOMTmpRealloc;
+
+	CSommet ** pSOMListeSommetCopy = (CSommet **) malloc(sizeof(CSommet *) * gGraphe->uGPHTailleLSom);
+	unsigned int uiTailleListeSommCpy = gGraphe->uGPHTailleLSom;
+
+	if (pSOMListeSommetCopy == NULL) {
+		throw CException(CGRAPHE_Alloc_Echouee, "CGraphe::calcStableMax(CGraphe *gGraphe, CSommet ** pSOMEnsembleStable, unsigned int uiNbElemEnsemble) : Allocation échouée");
+	}
+
+	//On fait une copie du tableau de sommets pour le recopier après chaque suppression de sommet
+	for (unsigned int i = 0; i < gGraphe->uGPHTailleLSom; ++i) {
+		pSOMListeSommetCopy[i] = new CSommet();
+		*pSOMListeSommetCopy[i] = *gGraphe->pSOMGPHListeSommet[i];
+	}
+
+	for (unsigned int i = 0; i < gGraphe->uGPHTailleLSom; ++i) {
+
+		/* LIGNE 9 */
+		pSOMCurrent = gGraphe->pSOMGPHListeSommet[i];
+
+
+		/* LIGNE 10 */
+		pSOMTmpRealloc = (CSommet **) malloc(sizeof(CSommet *) * (uiNbElemEnsemble + 1));
+
+		if (pSOMTmpRealloc == NULL) {
+			free(pSOMTmpRealloc);
+			throw CException(CGRAPHE_Alloc_Echouee, "CGraphe::calcStableMax(CGraphe *gGraphe, CSommet ** pSOMEnsembleStable, unsigned int uiNbElemEnsemble) : Allocation échouée");
+		}
+
+		for (unsigned int uBoucle = 0; uBoucle < uiNbElemEnsemble; ++uBoucle) {
+			pSOMTmpRealloc[uBoucle] = pSOMEnsembleStable[uBoucle];
+		}
+
+
+		pSOMEnsembleStable = pSOMTmpRealloc;
+		pSOMEnsembleStable[uiNbElemEnsemble] = new CSommet();
+		*pSOMEnsembleStable[uiNbElemEnsemble] = *pSOMCurrent;
+		++uiNbElemEnsemble;
+		/* FIN LIGNE 10 */
+		
+
+		/* LIGNE 12 */
+		unsigned int uBoucle = 0;
+		
+		//On stocke une copie de tous les sommets liés avec le sommet à supprimé dans un tableau
+		//Puis on supprime l'original
+		while ( uBoucle < gGraphe->uGPHTailleLSom ) {
+
+			if (gGraphe->pSOMGPHListeSommet[uBoucle]->SOMLies(*pSOMCurrent)) {
+				gGraphe->GPHSupprimerSommet(gGraphe->pSOMGPHListeSommet[uBoucle]->SOMGetId());
+			}
+			else {
+				++uBoucle;
+			}
+		}
+		
+
+		/* LIGNE 11 */
+		gGraphe->GPHSupprimerSommet(pSOMCurrent->SOMGetId());
+
+
+		/* LIGNE 13 */
+		this->calcStableMax(gGraphe, pSOMEnsembleStable, uiNbElemEnsemble);
+
+		/* LIGNE 14 */
+		//On remet le graphe tel qu'il était avant la supression des sommets
+		gGraphe->pSOMGPHListeSommet = pSOMListeSommetCopy;
+		gGraphe->uGPHTailleLSom = uiTailleListeSommCpy; //<<<< LE FAIT DE REMETTRE LA TAILLE FAIT PLANTER DANS LES ITERATIONS SUIVANTES
+
+	}
 }
 
 

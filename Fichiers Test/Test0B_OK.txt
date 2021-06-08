@@ -1,0 +1,9 @@
+NBSommets=3
+NBArcs=0
+Sommets=[
+Numero=1
+Numero=2
+Numero=3
+]
+Arcs=[
+]

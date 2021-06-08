@@ -41,30 +41,31 @@ int main(int argc, char * argv[])
 	if (argc > 1) {
 
 		CGraphe *GPHLeGraphe = NULL;
-		CGraphe *GPHLeGrapheInverse = NULL;
 		CFichier *FILLeFichier = NULL;
+
 
 		//On parcourt l'ensemble des chemins passés en paramètre
 		for (int i = 1; i < argc; ++i) {
 			try {
 				FILLeFichier = new CFichier(argv[i]);
-
 				printf(i > 1 ? "\n\n" : "");
 
 
 				printf("----- GRAPHE DU FICHIER \"%s\" -----\n\n", argv[i]);
 				GPHLeGraphe = new CGraphe(FILLeFichier->getContenu());
+
+
 				GPHLeGraphe->GPHAfficherGraphe();
 
+				GPHLeGraphe->calcStableMax(NULL);
 
-				printf("\n----- GRAPHE INVERSE DU FICHIER \"%s\" -----\n\n", argv[i]);
-				GPHLeGrapheInverse = &GPHLeGraphe->GPHRenverserGraphe();
-				GPHLeGrapheInverse->GPHAfficherGraphe();
+				printf("\n----- ENSEMBLE STABLE MAX \"%s\" -----\n\n", argv[i]);
+				GPHLeGraphe->GPHAfficherEnsembleStableMax();
 
 				cout << endl << endl;
 				
 				delete GPHLeGraphe;
-				delete GPHLeGrapheInverse;
+				delete FILLeFichier;
 			}
 			//On gère les erreurs de création du graphe et d'inversion du graphe
 			catch (CException EXCELevee) {

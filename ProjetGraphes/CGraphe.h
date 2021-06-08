@@ -41,6 +41,10 @@ class CGraphe
 {
 private :
 
+	CSommet ** pSOMEnsembleStableMax;				/*!< L'ensemble stable de la plus grande taille dans le graphe. */
+	unsigned int uGPHTailleEnsembleStableMax;	/*!< Le nombre de sommets de l'ensemble stable de la plus grande taille dans le graphe.. */
+
+
 	CSommet ** pSOMGPHListeSommet;	/*!< La liste des sommets du graphe. */
 	unsigned int uGPHTailleLSom;	/*!< Le nombre de sommets du graphe. */
 
@@ -99,7 +103,16 @@ public:
 	unsigned int GPHAjouterSommet(unsigned int uNumero);
 
 
+	/*!
+	 * Ajoute un nouveau sommet dans le graphe.
+	 * OU renvoie une erreur si le sommet existe déjà
+	 *
+	 * \param pSOMParam Le sommet à ajouter
+	 * \return L'index du sommet créé
+	 */
+	unsigned int GPHAjouterSommet(CSommet * pSOMParam);
 
+	
 	/*!
 	 * Supprime un sommet dans le graphe.
 	 * Supprime le sommet de numero uId du graphe ainsi que tout ses liens avec les autres sommets. 
@@ -167,7 +180,13 @@ public:
 	 */
 	void GPHAfficherSommet(unsigned int uId);
 	
-	
+
+	/*!
+	 * Méthode qui affiche l'ensemble stable maximum du graphe
+	 * 
+	 */
+	void GPHAfficherEnsembleStableMax();
+
 
 	/*!
 	 * Affiche le graphe
@@ -182,6 +201,26 @@ public:
 	 * \return Un nouvel objet CGraphe, inversé par rapport à 'objet appelant
 	 */
 	CGraphe & GPHRenverserGraphe();
+
+
+	/*!
+	 * Méthode qui initialise le plus grand ensemble stable du graphe gGraphe ou du graphe appelant si
+	 * gGraphe est NULL ou qu'il ne possède pas de sommets.
+	 *
+	 * \param gGraphe Le graphe dont on veut initialiser le plus grand ensemble stable.
+	 */
+	void calcStableMax(CGraphe *gGraphe);
+
+
+	/*!
+	 * Méthode qui initialise le plus grand ensemble stable du graphe gGraphe ou du graphe appelant si
+	 * gGraphe est NULL ou qu'il ne possède pas de sommets.
+	 *
+	 * \param gGraphe Le graphe dont on veut initialiser le plus grand ensemble stable.
+	 * \param pSOMEnsembleStable La liste des sommets de l'ensemble stable en cours de calcul.
+	 * \param uiNbElemEnsemble Le nombre de sommets présents dans la liste pSOMEnsembleStable.
+	 */
+	void calcStableMax(CGraphe *gGraphe, CSommet ** pSOMEnsembleStable, unsigned int uiNbElemEnsemble);
 
 
 	/*!

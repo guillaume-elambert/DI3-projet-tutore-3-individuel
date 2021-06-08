@@ -166,7 +166,7 @@ void CSommet::SOMRetirerArcArrivant(unsigned int uDestination) {
 				++uCounter;
 			}
 			else {
-				delete pARCNouvelleListe[uCounter];
+				//delete pARCNouvelleListe[uCounter];
 			}
 		}
 
@@ -281,7 +281,7 @@ void CSommet::SOMRetirerArcSortant(unsigned int uDestination)
 				++uCounter;
 			}
 			else {
-				delete pARCNouvelleListe[uCounter];
+				//delete pARCNouvelleListe[uCounter];
 			}
 		}
 
